@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --color-primary: #1B2B5E;
@@ -11,44 +9,11 @@
   --color-text-muted: #6B7280;
 }
 
-@layer base {
-  body {
-    background-color: var(--color-background);
-    color: var(--color-text);
-    font-family: 'Inter', sans-serif;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
+body {
+  background-color: #F9F8F6;
+  color: #0F0F0F;
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-[#F5A623] text-white font-semibold px-6 py-3 rounded-full hover:bg-[#e09520] transition-colors duration-200 text-sm;
-  }
-
-  .btn-secondary {
-    @apply bg-transparent text-[#1B2B5E] font-semibold px-6 py-3 rounded-full border-2 border-[#1B2B5E] hover:bg-[#1B2B5E] hover:text-white transition-colors duration-200 text-sm;
-  }
-
-  .btn-ghost {
-    @apply bg-transparent text-[#6B7280] font-medium px-4 py-2 rounded-full hover:bg-gray-100 transition-colors duration-200 text-sm;
-  }
-
-  .card {
-    @apply bg-white rounded-2xl border border-gray-100 shadow-sm;
-  }
-
-  .input {
-    @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#0F0F0F] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B2B5E] focus:border-transparent transition-all duration-200 text-sm;
-  }
-
-  .label {
-    @apply block text-sm font-medium text-[#0F0F0F] mb-1.5;
-  }
-
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
+* {
+  box-sizing: border-box;
 }
