@@ -29,19 +29,19 @@ export interface User {
   id: string;
   clerkId: string;
   email: string;
-  name?: string;
+  name?: string | null;
   plan: Plan;
-  subscriptionStatus?: string;
-  trialEndsAt?: Date;
-  planExpiresAt?: Date;
+  subscriptionStatus?: string | null;
+  trialEndsAt?: Date | null;
+  planExpiresAt?: Date | null;
   onboardingCompleted: boolean;
-  intakeCycle?: string;
-  degreeType?: DegreeType;
-  schoolCountRange?: string;
+  intakeCycle?: string | null;
+  degreeType?: DegreeType | null;
+  schoolCountRange?: string | null;
   regions: string[];
-  processStage?: ProcessStage;
+  processStage?: ProcessStage | null;
   aiReviewsToday: number;
-  aiReviewsResetAt?: Date;
+  aiReviewsResetAt?: Date | null;
   createdAt: Date;
 }
 
@@ -69,12 +69,12 @@ export interface Task {
 
 export interface Document {
   id: string;
-  applicationId?: string;
+  applicationId?: string | null;
   userId: string;
   type: DocumentType;
   fileUrl: string;
   fileName: string;
-  fileSize?: number;
+  fileSize?: number | null;
   createdAt: Date;
 }
 
@@ -114,17 +114,4 @@ export type ApplicationStatusConfig = {
   label: string;
   color: string;
   bg: string;
-};
-
-export const APPLICATION_STATUS_CONFIG: Record<
-  ApplicationStatus,
-  ApplicationStatusConfig
-> = {
-  NOT_STARTED: { label: "Not Started", color: "text-gray-600", bg: "bg-gray-100" },
-  IN_PROGRESS: { label: "In Progress", color: "text-blue-600", bg: "bg-blue-100" },
-  SUBMITTED: { label: "Submitted", color: "text-purple-600", bg: "bg-purple-100" },
-  INTERVIEW: { label: "Interview", color: "text-amber-600", bg: "bg-amber-100" },
-  ACCEPTED: { label: "Accepted", color: "text-green-600", bg: "bg-green-100" },
-  REJECTED: { label: "Rejected", color: "text-red-600", bg: "bg-red-100" },
-  WITHDRAWN: { label: "Withdrawn", color: "text-gray-500", bg: "bg-gray-50" },
 };
