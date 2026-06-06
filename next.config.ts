@@ -1,10 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "@anthropic-ai/sdk"],
-  },
-  output: "standalone",
+  serverExternalPackages: ["@prisma/client", "@anthropic-ai/sdk"],
 };
 
 export default nextConfig;
