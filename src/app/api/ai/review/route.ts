@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 import { FREE_PLAN_LIMITS } from "@/lib/utils";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: Request) {
@@ -14,12 +17,10 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { clerkId: userId } });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    // Check daily AI review limit for free users
     if (user.plan === "FREE") {
       const now = new Date();
       const resetAt = user.aiReviewsResetAt;
       const isNewDay = !resetAt || resetAt.toDateString() !== now.toDateString();
-
       const reviewsToday = isNewDay ? 0 : user.aiReviewsToday;
       if (reviewsToday >= FREE_PLAN_LIMITS.aiReviewsPerDay) {
         return NextResponse.json({
@@ -58,7 +59,6 @@ Respond ONLY with valid JSON in this exact format:
     const rawText = message.content[0].type === "text" ? message.content[0].text : "";
     const feedback = JSON.parse(rawText.replace(/```json|```/g, "").trim());
 
-    // Save review
     const review = await prisma.documentReview.create({
       data: {
         userId: user.id,
@@ -72,7 +72,6 @@ Respond ONLY with valid JSON in this exact format:
       },
     });
 
-    // Update daily counter
     await prisma.user.update({
       where: { id: user.id },
       data: {
