@@ -11,9 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
     "@clerk/nextjs": "^7.4.3",
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.107.0",
     "@types/uuid": "^10.0.0",
     "clsx": "^2.1.1",
@@ -21,12 +19,11 @@
     "flutterwave-node-v3": "^1.3.2",
     "lucide-react": "^1.17.0",
     "next": "16.2.7",
-    "prisma": "^7.8.0",
+    "prisma": "^5.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.6.0",
     "uuid": "^14.0.0",
-    "ws": "^8.21.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -34,7 +31,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/ws": "^8.18.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
