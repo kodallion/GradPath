@@ -1,7 +1,7 @@
 // Auto-generated landing markup. Edit copy here.
 export const LANDING_HTML = `<nav class="nav" id="gp-nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="#">
+    <a class="brand" href="/">
       <span class="brand-logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9 12 5 2 9l10 4 10-4z"/><path d="M6 11.2V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4.8"/><path d="M22 9v5.5"/></svg></span>
       <span class="brand-name">GradPath</span>
     </a>
@@ -12,8 +12,8 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
       <a href="#faq">FAQ</a>
     </div>
     <div class="nav-cta">
-      <a class="nav-signin" href="#">Sign in</a>
-      <a class="btn btn-primary" href="#">Get started free</a>
+      <a class="nav-signin" href="/sign-in">Sign in</a>
+      <a class="btn btn-primary" href="/sign-up">Get started free</a>
     </div>
     <button class="nav-toggle" id="gp-navToggle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
   </div>
@@ -26,10 +26,10 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
       <h1>Every application.<br><span class="hl">One calm place.</span></h1>
       <p class="hero-sub">Track deadlines, manage every task, and get AI feedback on your SOP and CV — all in one workspace built for grad school applicants.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary btn-lg" href="#">Start for free
+        <a class="btn btn-primary btn-lg" href="/sign-up">Start for free
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="btn btn-ghost btn-lg" href="#">See how it works</a>
+        <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
       </div>
       <div class="hero-trust">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
@@ -240,7 +240,7 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
       <li><span class="spot-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></span> Specific strengths worth keeping</li>
       <li><span class="spot-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></span> Concrete improvements, not vague advice</li>
     </ul>
-    <a class="btn btn-primary btn-lg" href="#">Try a free review</a>
+    <a class="btn btn-primary btn-lg" href="/sign-up">Try a free review</a>
   </div>
   <div class="review">
     <!-- floating score ring -->
@@ -299,7 +299,7 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Task &amp; document tracking</li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Deadline countdowns</li>
         </ul>
-        <a class="btn btn-ghost btn-lg" href="#">Get started</a>
+        <a class="btn btn-ghost btn-lg" href="/sign-up">Get started</a>
       </div>
       <div class="price featured reveal">
         <span class="price-tag">Most popular</span>
@@ -312,7 +312,7 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Everything in Free</li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 7-day free trial</li>
         </ul>
-        <a class="btn btn-primary btn-lg" href="#">Start free trial</a>
+        <a class="btn btn-primary btn-lg" href="/sign-up">Start free trial</a>
       </div>
     </div>
   </div>
@@ -341,17 +341,17 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
   <h2>Ready to take control of your applications?</h2>
   <p>Join thousands of applicants who turned grad-school chaos into one calm, organised workspace.</p>
   <div class="hero-ctas">
-    <a class="btn btn-primary btn-lg" href="#">Start for free
+    <a class="btn btn-primary btn-lg" href="/sign-up">Start for free
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
     </a>
-    <a class="btn btn-white btn-lg" href="#">Sign in</a>
+    <a class="btn btn-white btn-lg" href="/sign-up">Sign in</a>
   </div>
 </div></div></section>
 
 <footer class="footer"><div class="wrap">
   <div class="foot-grid">
     <div class="foot-about">
-      <a class="brand" href="#"><span class="brand-logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9 12 5 2 9l10 4 10-4z"/><path d="M6 11.2V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4.8"/><path d="M22 9v5.5"/></svg></span><span class="brand-name">GradPath</span></a>
+      <a class="brand" href="/"><span class="brand-logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9 12 5 2 9l10 4 10-4z"/><path d="M6 11.2V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4.8"/><path d="M22 9v5.5"/></svg></span><span class="brand-name">GradPath</span></a>
       <p>Every graduate application in one calm, organised workspace — with AI that helps you actually get in.</p>
     </div>
     <div class="foot-col"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How it works</a><a href="#faq">FAQ</a></div>
