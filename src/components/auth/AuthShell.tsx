@@ -23,6 +23,10 @@ function BrandPanel({ phase }: { phase: "signin" | "signup" }) {
   const t = TESTIMONIAL[phase];
   return (
     <div className="au-brandpanel">
+      <a className="au-brand" href="/">
+        <span className="au-logo"><Logo /></span>
+        <span className="au-wordmark">GradPath</span>
+      </a>
       <div className="au-brandbody">
         <h2 className="au-bigline">Every application,<br />one calm workspace.</h2>
         <p className="au-brandlead">
