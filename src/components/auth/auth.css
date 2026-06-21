@@ -29,5 +29,18 @@
 .gp-auth .cl-otpCodeFieldInput{border-radius:11px;border:1px solid var(--line-2);}
 .gp-auth .cl-formFieldInput:focus{border-color:var(--blue);}
 
+.gp-auth .cl-rootBox,.gp-auth .cl-cardBox,.gp-auth .cl-card{width:100%;max-width:100%;background:transparent;box-shadow:none;border:none;border-radius:0;padding:0;}
+.gp-auth .cl-cardBox{filter:none;}
+.gp-auth .cl-card{gap:0;}
+.gp-auth .cl-header{text-align:left;align-items:flex-start;margin-bottom:18px;}
+.gp-auth .cl-headerTitle{text-align:left;font-size:30px;}
+.gp-auth .cl-headerSubtitle{text-align:left;}
+.gp-auth .cl-footer{display:none;}
+.gp-auth .cl-footerPages{display:none;}
+.gp-auth .cl-logoBox{display:none;}
+.gp-auth .cl-footerAction{background:transparent;padding-top:18px;}
+.gp-auth .cl-footerAction *{background:transparent;}
+.gp-auth .cl-main,.gp-auth .cl-form{width:100%;}
+
 .gp-auth{min-height:100vh;}
 
