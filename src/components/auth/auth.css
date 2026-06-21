@@ -42,5 +42,8 @@
 .gp-auth .cl-footerAction *{background:transparent;}
 .gp-auth .cl-main,.gp-auth .cl-form{width:100%;}
 
+.gp-auth .cl-badge{display:none;}
+.gp-auth .cl-formFieldHintText,.gp-auth .cl-formFieldInfoText{max-width:100%;white-space:normal;}
+
 .gp-auth{min-height:100vh;}
 
