@@ -47,5 +47,7 @@
 
 .gp-auth .cl-badge,.gp-auth span.cl-badge,.gp-auth [class*="cl-badge"]{display:none !important;}
 
+.gp-auth .cl-lastAuthenticationStrategyBadge,.gp-auth [class*="lastAuthenticationStrategy"]{display:none !important;}
+
 .gp-auth{min-height:100vh;}
 
