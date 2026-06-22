@@ -61,5 +61,12 @@
 
 .gp-auth .cl-internal-y44tp9,.gp-auth .cl-internal-1fpq5at{display:none !important;}
 
+/* Catch-all: any decorative stripe/footer element with no visible text
+   directly inside the Clerk card root, plus the cl-footer wrapper border
+   that can otherwise render as a thin orange/striped line. */
+.gp-auth .cl-card > div:last-child:not(:has(input,button,a[href]:not([aria-label="Clerk logo"]),p)){display:none !important;}
+.gp-auth .cl-footer{border-top:none !important;background:none !important;}
+.gp-auth .cl-footer > div:empty,.gp-auth .cl-footer *:empty{display:none !important;}
+
 .gp-auth{min-height:100vh;}
 

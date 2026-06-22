@@ -95,6 +95,15 @@ export default function AuthShell({
           wrapper.style.display = "none";
         }
       });
+      // Catch the decorative striped/gradient bar by its computed background,
+      // regardless of its (hashed) class name.
+      root.querySelectorAll<HTMLElement>(".cl-card *").forEach((el) => {
+        if (el.children.length > 0) return; // only leaf-ish nodes
+        const bg = getComputedStyle(el).backgroundImage;
+        if (bg && bg.includes("gradient")) {
+          el.style.display = "none";
+        }
+      });
     };
     hideBranding();
     const id = setInterval(hideBranding, 500);
