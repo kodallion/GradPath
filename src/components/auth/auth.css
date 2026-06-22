@@ -35,11 +35,12 @@
 .gp-auth .cl-header{text-align:left;align-items:flex-start;margin-bottom:18px;}
 .gp-auth .cl-headerTitle{text-align:left;font-size:30px;}
 .gp-auth .cl-headerSubtitle{text-align:left;}
-.gp-auth .cl-footer{display:none;}
+.gp-auth .cl-footer{background:transparent;border:none;padding-top:0;}
 .gp-auth .cl-footerPages{display:none;}
-.gp-auth .cl-logoBox{display:none;}
-.gp-auth .cl-footerAction{background:transparent;padding-top:18px;}
+.gp-auth .cl-internal-b3fm6y,.gp-auth .cl-logoBox{display:none;}
+.gp-auth .cl-footerAction{background:transparent;padding-top:18px;text-align:left;}
 .gp-auth .cl-footerAction *{background:transparent;}
+.gp-auth .cl-footerActionText{font-size:14px;color:var(--muted);}
 .gp-auth .cl-main,.gp-auth .cl-form{width:100%;}
 
 
