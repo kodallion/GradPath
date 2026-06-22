@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import "./auth.css";
 
 const Logo = () => (
@@ -8,19 +11,35 @@ const Logo = () => (
   </svg>
 );
 
-const TESTIMONIAL = {
-  signin: {
+const TESTIMONIALS = [
+  {
     q: "GradPath turned five overwhelming applications into one calm checklist.",
     av: "C", who: "Chiamaka N.", role: "MSc Public Health, 2026",
   },
-  signup: {
+  {
     q: "I finally stopped missing deadlines. Everything lives in one place now.",
     av: "D", who: "Daniel A.", role: "MEng, admitted to TU Delft",
   },
-};
+  {
+    q: "The AI review caught things my professors missed. My SOP is finally ready.",
+    av: "F", who: "Funmi O.", role: "PhD applicant, Ecology",
+  },
+];
 
-function BrandPanel({ phase }: { phase: "signin" | "signup" }) {
-  const t = TESTIMONIAL[phase];
+const ROTATE_MS = 5000;
+
+function BrandPanel() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActive((i) => (i + 1) % TESTIMONIALS.length);
+    }, ROTATE_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  const t = TESTIMONIALS[active];
+
   return (
     <div className="au-brandpanel">
       <a className="au-brand" href="/">
@@ -42,14 +61,21 @@ function BrandPanel({ phase }: { phase: "signin" | "signup" }) {
       </div>
       <div className="au-brandfoot">
         <span>Trusted by 12,000+ applicants</span>
-        <span className="au-brandfoot-dots"><i></i><i></i><i></i></span>
+        <span className="au-brandfoot-dots">
+          {TESTIMONIALS.map((_, i) => (
+            <i
+              key={i}
+              className={i === active ? "on" : ""}
+              onClick={() => setActive(i)}
+            />
+          ))}
+        </span>
       </div>
     </div>
   );
 }
 
 export default function AuthShell({
-  phase,
   children,
 }: {
   phase: "signin" | "signup";
@@ -58,7 +84,7 @@ export default function AuthShell({
   return (
     <div className="gp-auth">
       <div className="au-shell">
-        <BrandPanel phase={phase} />
+        <BrandPanel />
         <div className="au-formpane">
           <div className="au-formwrap">
             <div className="au-mobilebrand"><span className="au-logo"><Logo /></span> GradPath</div>
