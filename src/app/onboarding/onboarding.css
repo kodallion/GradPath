@@ -212,3 +212,8 @@ select.gp-input{
   .gp-cards.cols2{grid-template-columns:1fr}
   .gp-countries{grid-template-columns:1fr 1fr}
 }
+
+.gp-signin-link{font-size:13.5px;color:#9AA1AD;margin-top:14px;letter-spacing:-0.01em;}
+.gp-signin-link a{color:#5286FF;font-weight:600;}
+.gp-signin-link a:hover{color:#3F75FF;text-decoration:underline;}
+

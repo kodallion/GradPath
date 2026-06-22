@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import {
   GraduationCap,
@@ -348,6 +349,9 @@ export default function OnboardingClient() {
           })}
         </div>
         <p className="foot">Takes about a minute. You can change any of this later in Settings.</p>
+        <p className="gp-signin-link">
+          Already have an account? <Link href="/sign-in">Sign in</Link>
+        </p>
       </aside>
 
       {/* RIGHT / MAIN */}
