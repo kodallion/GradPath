@@ -55,7 +55,7 @@
 .gp-auth .au-brandfoot-dots i.on{background:var(--blue);}
 .gp-auth .au-quote{transition:opacity .25s ease;}
 
-.gp-auth .cl-internal-y44tp9{display:none !important;}
+.gp-auth .cl-internal-y44tp9,.gp-auth .cl-internal-1fpq5at{display:none !important;}
 
 .gp-auth{min-height:100vh;}
 
