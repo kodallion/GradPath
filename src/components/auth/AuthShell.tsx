@@ -81,6 +81,29 @@ export default function AuthShell({
   phase: "signin" | "signup";
   children: React.ReactNode;
 }) {
+  // Defensive fallback: Clerk's hashed class for the "Secured by" branding
+  // bar can change between builds. The CSS rule targets the known class;
+  // this catches it by its stable text content if the hash ever shifts.
+  useEffect(() => {
+    const hideSecuredBy = () => {
+      const root = document.querySelector(".gp-auth");
+      if (!root) return;
+      root.querySelectorAll("p").forEach((p) => {
+        if (p.textContent?.trim() === "Secured by") {
+          const wrapper = p.closest("div");
+          if (wrapper) (wrapper as HTMLElement).style.display = "none";
+        }
+      });
+    };
+    hideSecuredBy();
+    const id = setInterval(hideSecuredBy, 500);
+    const timeout = setTimeout(() => clearInterval(id), 5000);
+    return () => {
+      clearInterval(id);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   return (
     <div className="gp-auth">
       <div className="au-shell">
