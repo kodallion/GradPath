@@ -1,132 +1,282 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ArrowRight, AlertCircle, CheckCircle2, Clock, TrendingUp } from "lucide-react";
-import { cn, formatDate, daysUntilDeadline, getDeadlineUrgency, APPLICATION_STATUS_CONFIG } from "@/lib/utils";
-import type { User, Application, Notification } from "@/types";
+import {
+  Plus, Layers, CheckSquare, Clock, Sparkles, Calendar, ArrowRight,
+} from "lucide-react";
+import {
+  daysUntilDeadline,
+  getDeadlineUrgency,
+  APPLICATION_STATUS_CONFIG,
+  FREE_PLAN_LIMITS,
+  isPro,
+} from "@/lib/utils";
+import type { User, Application, Task } from "@/types";
+import "./dashboard.css";
 
 interface Props {
   user: User;
-  applications: (Application & { tasks: { completed: boolean }[] })[];
-  notifications: Notification[];
+  applications: (Application & { tasks: Task[] })[];
 }
 
-export default function DashboardClient({ user, applications, notifications }: Props) {
+const STATUS_BADGE: Record<string, { fg: string; bg: string; dot: string }> = {
+  NOT_STARTED: { fg: "#5A6B8C", bg: "#EDF0F6", dot: "#8595B5" },
+  IN_PROGRESS: { fg: "#B5621E", bg: "#FBEADB", dot: "#E8853B" },
+  SUBMITTED: { fg: "#2B5BE0", bg: "#EAF1FF", dot: "#3F75FF" },
+  INTERVIEW: { fg: "#6A4FD0", bg: "#EEEBFB", dot: "#7A5AE0" },
+  ACCEPTED: { fg: "#1B8C50", bg: "#E6F6EE", dot: "#22A565" },
+  REJECTED: { fg: "#B23B3B", bg: "#FAE8E8", dot: "#D45B5B" },
+  WITHDRAWN: { fg: "#6B7280", bg: "#F1F2F4", dot: "#9AA1AD" },
+};
+
+function completionColor(pct: number) {
+  if (pct < 40) return "#D45B5B";
+  if (pct < 70) return "#E8A33D";
+  return "#22A565";
+}
+
+function urgencyDisplay(app: Application) {
+  if (["SUBMITTED", "ACCEPTED", "REJECTED", "WITHDRAWN"].includes(app.status)) {
+    return { color: "#5A6B8C", label: APPLICATION_STATUS_CONFIG[app.status].label };
+  }
+  const urgency = getDeadlineUrgency(app.deadline);
+  const days = daysUntilDeadline(app.deadline);
+  if (urgency === "overdue") return { color: "#B23B3B", label: "Overdue" };
+  if (urgency === "critical") return { color: "#B5621E", label: `${days} day${days === 1 ? "" : "s"} left` };
+  if (urgency === "warning") return { color: "#A86E12", label: `${days} days left` };
+  return { color: "#1F7A4D", label: `${days} days left` };
+}
+
+export default function DashboardClient({ user, applications }: Props) {
   const totalApps = applications.length;
-  const activeApps = applications.filter((a) => !["ACCEPTED", "REJECTED", "WITHDRAWN"].includes(a.status)).length;
-  const totalTasks = applications.flatMap((a) => a.tasks).length;
-  const completedTasks = applications.flatMap((a) => a.tasks).filter((t) => t.completed).length;
-  const urgentDeadlines = applications.filter((a) => {
-    const u = getDeadlineUrgency(a.deadline);
-    return u === "critical" || u === "overdue";
+  const allTasks = applications.flatMap((a) => a.tasks);
+  const pendingTasks = allTasks.filter((t) => !t.completed).length;
+  const inProgress = applications.filter((a) => a.status === "IN_PROGRESS").length;
+  const submitted = applications.filter((a) => a.status === "SUBMITTED").length;
+
+  const upcoming = [...applications]
+    .filter((a) => !["REJECTED", "WITHDRAWN"].includes(a.status))
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  const nextDeadline = upcoming[0];
+
+  const pro = isPro(user.plan);
+  const appLimit = FREE_PLAN_LIMITS.applications;
+  const aiLimit = FREE_PLAN_LIMITS.aiReviewsPerDay;
+  const aiUsed = user.aiReviewsToday;
+
+  const firstName = user.name?.split(" ")[0] || "there";
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 
-  const taskRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="gp-dashboard-page">
+      <div className="gp-pagehead">
         <div>
-          <h1 className="text-2xl font-bold text-[#1B2B5E]">
-            Hey {user.name?.split(" ")[0] || "there"} 👋
-          </h1>
-          <p className="text-[#6B7280] text-sm mt-0.5">Here's your application overview</p>
+          <h1 className="gp-hello">Good day, {firstName}</h1>
+          <p className="gp-subhello">
+            {today} · {totalApps} application{totalApps === 1 ? "" : "s"}
+          </p>
         </div>
-        <Link href="/applications/new" className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Application
+        <Link href="/applications/new" className="gp-addbtn">
+          <Plus size={16} /> <span>Add application</span>
         </Link>
       </div>
 
-      {/* Urgent deadlines banner */}
-      {urgentDeadlines.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-red-700">Urgent: {urgentDeadlines.length} deadline{urgentDeadlines.length > 1 ? "s" : ""} need attention</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {urgentDeadlines.map((a) => (
-                <Link key={a.id} href={`/applications/${a.id}`} className="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full hover:bg-red-200 transition-colors">
-                  {a.universityName} — {daysUntilDeadline(a.deadline) < 0 ? "Overdue" : `${daysUntilDeadline(a.deadline)}d left`}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Applications", value: totalApps, icon: <TrendingUp className="w-4 h-4" />, color: "text-[#1B2B5E]", bg: "bg-blue-50" },
-          { label: "Active", value: activeApps, icon: <Clock className="w-4 h-4" />, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Tasks Done", value: `${completedTasks}/${totalTasks}`, icon: <CheckCircle2 className="w-4 h-4" />, color: "text-green-600", bg: "bg-green-50" },
-          { label: "Completion Rate", value: `${taskRate}%`, icon: <TrendingUp className="w-4 h-4" />, color: "text-purple-600", bg: "bg-purple-50" },
-        ].map((stat) => (
-          <div key={stat.label} className="card p-4">
-            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center mb-3", stat.bg, stat.color)}>
-              {stat.icon}
-            </div>
-            <p className="text-2xl font-bold text-[#0F0F0F]">{stat.value}</p>
-            <p className="text-xs text-[#6B7280] mt-0.5">{stat.label}</p>
-          </div>
-        ))}
+      <div className="gp-stats">
+        <StatCard icon={<Layers size={18} />} label="Applications" value={totalApps} sub={`${inProgress} in progress · ${submitted} submitted`} />
+        <StatCard icon={<CheckSquare size={18} />} label="Pending Tasks" value={pendingTasks} sub="across all applications" />
+        <StatCard
+          icon={<Clock size={18} />}
+          label="Upcoming Deadlines"
+          value={upcoming.length}
+          sub={nextDeadline ? `next: ${nextDeadline.universityName}` : "none yet"}
+        />
+        <StatCard
+          icon={<Sparkles size={18} />}
+          label="AI Reviews Today"
+          value={pro ? "Unlimited" : `${aiUsed} / ${aiLimit}`}
+          sub={pro ? "on Pro plan" : `${Math.max(aiLimit - aiUsed, 0)} remaining on Free`}
+        />
       </div>
 
-      {/* Applications list */}
-      <div className="card">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-[#0F0F0F]">Your Applications</h2>
-          <Link href="/applications" className="text-sm text-[#1B2B5E] font-medium flex items-center gap-1 hover:underline">
-            View all <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+      <div className="gp-columns">
+        <div className="gp-col-main">
+          <div className="gp-sectionhead">
+            <h2>Your applications</h2>
+            <span className="gp-count">{totalApps} total</span>
+          </div>
+          <div className="gp-grid">
+            {applications.slice(0, 5).map((app) => (
+              <AppCard key={app.id} app={app} />
+            ))}
+            <Link href="/applications/new" className="gp-card gp-addcard">
+              <span className="gp-addcircle">
+                <Plus size={20} />
+              </span>
+              <span className="gp-addlabel">Add application</span>
+              <span className="gp-addsub">Track a new university</span>
+            </Link>
+          </div>
         </div>
 
-        {applications.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-6 h-6 text-[#1B2B5E]" />
+        <div className="gp-col-side">
+          <section className="gp-panel">
+            <div className="gp-panelhead">
+              <h2>Upcoming deadlines</h2>
+              <Calendar size={16} />
             </div>
-            <p className="font-semibold text-[#0F0F0F] mb-1">No applications yet</p>
-            <p className="text-sm text-[#6B7280] mb-4">Add your first school to get started</p>
-            <Link href="/applications/new" className="btn-primary">Add Application</Link>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {applications.slice(0, 5).map((app) => {
-              const urgency = getDeadlineUrgency(app.deadline);
-              const days = daysUntilDeadline(app.deadline);
-              const config = APPLICATION_STATUS_CONFIG[app.status];
-              const tasksDone = app.tasks.filter((t) => t.completed).length;
-              const tasksPct = app.tasks.length > 0 ? Math.round((tasksDone / app.tasks.length) * 100) : 0;
+            {upcoming.length === 0 ? (
+              <p className="gp-empty-note">No deadlines yet — add an application to get started.</p>
+            ) : (
+              <ul className="gp-deadlines">
+                {upcoming.slice(0, 5).map((app) => {
+                  const { color, label } = urgencyDisplay(app);
+                  return (
+                    <li className="gp-deadline" key={app.id}>
+                      <span className="gp-dl-bar" style={{ background: color }} />
+                      <div className="gp-dl-body">
+                        <div className="gp-dl-uni">{app.universityName}</div>
+                        <div className="gp-dl-prog">{app.program}</div>
+                      </div>
+                      <div className="gp-dl-right">
+                        <div className="gp-dl-date">
+                          {new Date(app.deadline).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                        </div>
+                        <span className="gp-dl-chip" style={{ background: color + "22", color }}>
+                          {label}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
 
-              return (
-                <Link key={app.id} href={`/applications/${app.id}`} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[#0F0F0F] truncate">{app.universityName}</p>
-                    <p className="text-xs text-[#6B7280] truncate">{app.program}</p>
-                  </div>
-                  <div className="hidden sm:flex items-center gap-2">
-                    <div className="w-16 bg-gray-100 rounded-full h-1.5">
-                      <div className="bg-[#1B2B5E] h-1.5 rounded-full" style={{ width: `${tasksPct}%` }} />
-                    </div>
-                    <span className="text-xs text-[#6B7280]">{tasksPct}%</span>
-                  </div>
-                  <span className={cn("badge", config.bg, config.color)}>{config.label}</span>
-                  <span className={cn(
-                    "text-xs font-medium shrink-0",
-                    urgency === "overdue" ? "text-red-600" :
-                    urgency === "critical" ? "text-red-500" :
-                    urgency === "warning" ? "text-amber-500" : "text-[#6B7280]"
-                  )}>
-                    {days < 0 ? "Overdue" : days === 0 ? "Today!" : `${days}d`}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+          <section className="gp-panel">
+            <div className="gp-panelhead">
+              <h2>Your plan</h2>
+              <span className="gp-freepill">{pro ? "Pro" : "Free"}</span>
+            </div>
+            <div className="gp-meter">
+              <div className="gp-meter-top">
+                <span>Applications</span>
+                <span>{pro ? "Unlimited" : `${totalApps}/${appLimit}`}</span>
+              </div>
+              <div className="gp-meter-track">
+                <div
+                  className="gp-meter-fill"
+                  style={{ width: `${pro ? 100 : Math.min((totalApps / appLimit) * 100, 100)}%`, background: "#0E1320" }}
+                />
+              </div>
+            </div>
+            <div className="gp-meter">
+              <div className="gp-meter-top">
+                <span>AI reviews today</span>
+                <span>{pro ? "Unlimited" : `${aiUsed}/${aiLimit}`}</span>
+              </div>
+              <div className="gp-meter-track">
+                <div
+                  className="gp-meter-fill"
+                  style={{ width: `${pro ? 100 : Math.min((aiUsed / aiLimit) * 100, 100)}%`, background: "var(--blue)" }}
+                />
+              </div>
+            </div>
+            {!pro && (
+              <button className="gp-planupgrade" disabled title="Online payment is launching shortly">
+                <span>
+                  Go Pro — <b>₦5,000</b>/mo
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
 }
+
+function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: React.ReactNode; sub: string }) {
+  return (
+    <div className="gp-stat">
+      <div className="gp-statico">{icon}</div>
+      <div className="gp-statbody">
+        <div className="gp-statlabel">{label}</div>
+        <div className="gp-statvalue">{value}</div>
+        <div className="gp-statsub">{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+function AppCard({ app }: { app: Application & { tasks: Task[] } }) {
+  const badge = STATUS_BADGE[app.status];
+  const config = APPLICATION_STATUS_CONFIG[app.status];
+  const { color: urgencyColor, label: urgencyLabel } = urgencyDisplay(app);
+  const total = app.tasks.length;
+  const done = app.tasks.filter((t) => t.completed).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const barColor = completionColor(pct);
+
+  return (
+    <Link href={`/applications/${app.id}`} className="gp-card">
+      <div className="gp-card-top">
+        <span className="gp-card-flag">{app.country ? countryFlag(app.country) : "🌍"}</span>
+        <span className="gp-badge" style={{ color: badge.fg, background: badge.bg }}>
+          <span className="dot" style={{ background: badge.dot }} />
+          {config.label}
+        </span>
+      </div>
+      <h3 className="gp-card-uni">{app.universityName}</h3>
+      <p className="gp-card-prog">{app.program}</p>
+      <div className="gp-card-meta">
+        <span className="gp-card-metaitem">
+          <Calendar size={14} />{" "}
+          {new Date(app.deadline).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
+        </span>
+        <span className="gp-card-metaitem" style={{ color: urgencyColor }}>
+          <Clock size={14} /> {urgencyLabel}
+        </span>
+      </div>
+      <div className="gp-card-progwrap">
+        <div className="gp-card-progtop">
+          <span>Completion</span>
+          <span className="gp-card-pct" style={{ color: barColor }}>
+            {pct}%
+          </span>
+        </div>
+        <div className="gp-prog-track">
+          <div className="gp-prog-fill" style={{ width: `${pct}%`, background: barColor }} />
+        </div>
+      </div>
+      <div className="gp-card-foot">
+        <span className="gp-card-open">
+          Open <ArrowRight size={14} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+// Lightweight country -> flag mapping for the handful of common destinations;
+// falls back to a globe icon for anything not listed.
+function countryFlag(country: string): string {
+  const map: Record<string, string> = {
+    "united kingdom": "🇬🇧", uk: "🇬🇧",
+    "united states": "🇺🇸", usa: "🇺🇸",
+    canada: "🇨🇦",
+    netherlands: "🇳🇱",
+    germany: "🇩🇪",
+    australia: "🇦🇺",
+    sweden: "🇸🇪",
+    ireland: "🇮🇪",
+    switzerland: "🇨🇭",
+  };
+  return map[country.trim().toLowerCase()] || "🌍";
+}
+

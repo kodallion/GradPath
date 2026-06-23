@@ -10,18 +10,12 @@ export default async function DashboardPage() {
   const user = await prisma.user.findUnique({ where: { clerkId: userId } });
   if (!user) redirect("/sign-in");
 
-  const [applications, notifications] = await Promise.all([
-    prisma.application.findMany({
-      where: { userId: user.id },
-      include: { tasks: true },
-      orderBy: { deadline: "asc" },
-    }),
-    prisma.notification.findMany({
-      where: { userId: user.id, read: false },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-  ]);
+  const applications = await prisma.application.findMany({
+    where: { userId: user.id },
+    include: { tasks: true },
+    orderBy: { deadline: "asc" },
+  });
 
-  return <DashboardClient user={user} applications={applications} notifications={notifications} />;
+  return <DashboardClient user={user} applications={applications} />;
 }
+

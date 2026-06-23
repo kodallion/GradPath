@@ -11,5 +11,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect("/sign-in");
   if (!user.onboardingCompleted) redirect("/onboarding");
 
-  return <AppShell user={user}>{children}</AppShell>;
+  const notifications = await prisma.notification.findMany({
+    where: { userId: user.id, read: false },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+
+  return (
+    <AppShell user={user} notifications={notifications}>
+      {children}
+    </AppShell>
+  );
 }
+
