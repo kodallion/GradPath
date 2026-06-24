@@ -11,12 +11,15 @@ import {
   FREE_PLAN_LIMITS,
   isPro,
 } from "@/lib/utils";
-import type { User, Application, Task } from "@/types";
+import type { User, Application, Task, Document, DocumentType } from "@/types";
 import "./dashboard.css";
 
 interface Props {
   user: User;
-  applications: (Application & { tasks: Task[] })[];
+  applications: (Omit<Application, "tasks" | "documents"> & {
+    tasks: Task[];
+    documents: Pick<Document, "type">[];
+  })[];
 }
 
 const STATUS_BADGE: Record<string, { fg: string; bg: string; dot: string }> = {
@@ -29,13 +32,17 @@ const STATUS_BADGE: Record<string, { fg: string; bg: string; dot: string }> = {
   WITHDRAWN: { fg: "#6B7280", bg: "#F1F2F4", dot: "#9AA1AD" },
 };
 
+// The set of document types every application is expected to have.
+// OTHER is excluded since it's not a standard required document.
+const REQUIRED_DOC_TYPES: DocumentType[] = ["SOP", "CV", "TRANSCRIPT"];
+
 function completionColor(pct: number) {
   if (pct < 40) return "#D45B5B";
   if (pct < 70) return "#E8A33D";
   return "#22A565";
 }
 
-function urgencyDisplay(app: Application) {
+function urgencyDisplay(app: Pick<Application, "status" | "deadline">) {
   if (["SUBMITTED", "ACCEPTED", "REJECTED", "WITHDRAWN"].includes(app.status)) {
     return { color: "#5A6B8C", label: APPLICATION_STATUS_CONFIG[app.status].label };
   }
@@ -45,6 +52,11 @@ function urgencyDisplay(app: Application) {
   if (urgency === "critical") return { color: "#B5621E", label: `${days} day${days === 1 ? "" : "s"} left` };
   if (urgency === "warning") return { color: "#A86E12", label: `${days} days left` };
   return { color: "#1F7A4D", label: `${days} days left` };
+}
+
+function missingDocsCount(documents: Pick<Document, "type">[]): number {
+  const present = new Set(documents.map((d) => d.type));
+  return REQUIRED_DOC_TYPES.filter((t) => !present.has(t)).length;
 }
 
 export default function DashboardClient({ user, applications }: Props) {
@@ -214,7 +226,14 @@ function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: s
   );
 }
 
-function AppCard({ app }: { app: Application & { tasks: Task[] } }) {
+function AppCard({
+  app,
+}: {
+  app: Omit<Application, "tasks" | "documents"> & {
+    tasks: Task[];
+    documents: Pick<Document, "type">[];
+  };
+}) {
   const badge = STATUS_BADGE[app.status];
   const config = APPLICATION_STATUS_CONFIG[app.status];
   const { color: urgencyColor, label: urgencyLabel } = urgencyDisplay(app);
@@ -222,6 +241,7 @@ function AppCard({ app }: { app: Application & { tasks: Task[] } }) {
   const done = app.tasks.filter((t) => t.completed).length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const barColor = completionColor(pct);
+  const missing = missingDocsCount(app.documents);
 
   return (
     <Link href={`/applications/${app.id}`} className="gp-card">
@@ -255,6 +275,21 @@ function AppCard({ app }: { app: Application & { tasks: Task[] } }) {
         </div>
       </div>
       <div className="gp-card-foot">
+        <span className="gp-card-docs">
+          {missing > 0 ? (
+            <>
+              <span className="gp-warn">●</span>
+              <span>
+                {missing} document{missing === 1 ? "" : "s"} missing
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="gp-ok">●</span>
+              <span>All documents in</span>
+            </>
+          )}
+        </span>
         <span className="gp-card-open">
           Open <ArrowRight size={14} />
         </span>

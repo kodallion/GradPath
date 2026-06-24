@@ -12,7 +12,10 @@ export default async function DashboardPage() {
 
   const applications = await prisma.application.findMany({
     where: { userId: user.id },
-    include: { tasks: true },
+    include: {
+      tasks: true,
+      documents: { select: { type: true } },
+    },
     orderBy: { deadline: "asc" },
   });
 
