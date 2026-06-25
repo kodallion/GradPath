@@ -12,9 +12,13 @@ export default async function ApplicationsPage() {
 
   const applications = await prisma.application.findMany({
     where: { userId: user.id },
-    include: { tasks: true, documents: true },
+    include: {
+      tasks: { orderBy: { createdAt: "asc" } },
+      documents: { select: { id: true, type: true } },
+    },
     orderBy: { deadline: "asc" },
   });
 
   return <ApplicationsClient applications={applications} plan={user.plan} />;
 }
+
