@@ -82,17 +82,25 @@ model Document {
 model DocumentReview {
   id            String     @id @default(cuid())
   userId        String
-  documentId    String
+  documentId    String?
   type          ReviewType
-  clarityScore  Int
-  strengthScore Int
-  suggestions   Json
-  highlight     String
+
+  overallScore  Int?
+  verdict       String?
+  wordCount     Int?
+  version       Int        @default(1)
+  result        Json?
+
+  clarityScore  Int?
+  strengthScore Int?
+  suggestions   Json?
+  highlight     String?
   rawFeedback   String?
+
   createdAt     DateTime   @default(now())
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
