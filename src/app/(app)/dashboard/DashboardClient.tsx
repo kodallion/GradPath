@@ -125,88 +125,85 @@ export default function DashboardClient({ user, applications }: Props) {
             {applications.slice(0, 5).map((app) => (
               <AppCard key={app.id} app={app} />
             ))}
-            <Link href="/applications/new" className="gp-card gp-addcard">
-              <span className="gp-addcircle">
-                <Plus size={20} />
-              </span>
-              <span className="gp-addlabel">Add application</span>
-              <span className="gp-addsub">Track a new university</span>
-            </Link>
           </div>
         </div>
 
         <div className="gp-col-side">
-          <section className="gp-panel">
-            <div className="gp-panelhead">
+          <div className="gp-side-block">
+            <div className="gp-sectionhead">
               <h2>Upcoming deadlines</h2>
               <Calendar size={16} />
             </div>
-            {upcoming.length === 0 ? (
-              <p className="gp-empty-note">No deadlines yet — add an application to get started.</p>
-            ) : (
-              <ul className="gp-deadlines">
-                {upcoming.slice(0, 5).map((app) => {
-                  const { color, label } = urgencyDisplay(app);
-                  return (
-                    <li className="gp-deadline" key={app.id}>
-                      <span className="gp-dl-bar" style={{ background: color }} />
-                      <div className="gp-dl-body">
-                        <div className="gp-dl-uni">{app.universityName}</div>
-                        <div className="gp-dl-prog">{app.program}</div>
-                      </div>
-                      <div className="gp-dl-right">
-                        <div className="gp-dl-date">
-                          {new Date(app.deadline).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+            <section className="gp-panel">
+              {upcoming.length === 0 ? (
+                <p className="gp-empty-note">No deadlines yet — add an application to get started.</p>
+              ) : (
+                <ul className="gp-deadlines">
+                  {upcoming.slice(0, 5).map((app) => {
+                    const { color, label } = urgencyDisplay(app);
+                    return (
+                      <li className="gp-deadline" key={app.id}>
+                        <span className="gp-dl-bar" style={{ background: color }} />
+                        <div className="gp-dl-body">
+                          <div className="gp-dl-uni">{app.universityName}</div>
+                          <div className="gp-dl-prog">{app.program}</div>
                         </div>
-                        <span className="gp-dl-chip" style={{ background: color + "22", color }}>
-                          {label}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+                        <div className="gp-dl-right">
+                          <div className="gp-dl-date">
+                            {new Date(app.deadline).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                          </div>
+                          <span className="gp-dl-chip" style={{ background: color + "22", color }}>
+                            {label}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+          </div>
 
-          <section className="gp-panel">
-            <div className="gp-panelhead">
+          <div className="gp-side-block">
+            <div className="gp-sectionhead">
               <h2>Your plan</h2>
               <span className="gp-freepill">{pro ? "Pro" : "Free"}</span>
             </div>
-            <div className="gp-meter">
-              <div className="gp-meter-top">
-                <span>Applications</span>
-                <span>{pro ? "Unlimited" : `${totalApps}/${appLimit}`}</span>
+            <section className="gp-panel">
+              <div className="gp-meter">
+                <div className="gp-meter-top">
+                  <span>Applications</span>
+                  <span>{pro ? "Unlimited" : `${totalApps}/${appLimit}`}</span>
+                </div>
+                <div className="gp-meter-track">
+                  <div
+                    className="gp-meter-fill"
+                    style={{ width: `${pro ? 100 : Math.min((totalApps / appLimit) * 100, 100)}%`, background: "#0E1320" }}
+                  />
+                </div>
               </div>
-              <div className="gp-meter-track">
-                <div
-                  className="gp-meter-fill"
-                  style={{ width: `${pro ? 100 : Math.min((totalApps / appLimit) * 100, 100)}%`, background: "#0E1320" }}
-                />
+              <div className="gp-meter">
+                <div className="gp-meter-top">
+                  <span>AI reviews today</span>
+                  <span>{pro ? "Unlimited" : `${aiUsed}/${aiLimit}`}</span>
+                </div>
+                <div className="gp-meter-track">
+                  <div
+                    className="gp-meter-fill"
+                    style={{ width: `${pro ? 100 : Math.min((aiUsed / aiLimit) * 100, 100)}%`, background: "var(--blue)" }}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="gp-meter">
-              <div className="gp-meter-top">
-                <span>AI reviews today</span>
-                <span>{pro ? "Unlimited" : `${aiUsed}/${aiLimit}`}</span>
-              </div>
-              <div className="gp-meter-track">
-                <div
-                  className="gp-meter-fill"
-                  style={{ width: `${pro ? 100 : Math.min((aiUsed / aiLimit) * 100, 100)}%`, background: "var(--blue)" }}
-                />
-              </div>
-            </div>
-            {!pro && (
-              <button className="gp-planupgrade" disabled title="Online payment is launching shortly">
-                <span>
-                  Go Pro — <b>₦5,000</b>/mo
-                </span>
-                <ArrowRight size={16} />
-              </button>
-            )}
-          </section>
+              {!pro && (
+                <button className="gp-planupgrade" disabled title="Online payment is launching shortly">
+                  <span>
+                    Go Pro — <b>₦5,000</b>/mo
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+              )}
+            </section>
+          </div>
         </div>
       </div>
     </div>

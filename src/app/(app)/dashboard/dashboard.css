@@ -11,7 +11,8 @@
 .gp-sectionhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .gp-sectionhead h2{font-size:17px;font-weight:700;}
 .gp-count{font-size:12.5px;color:var(--muted);font-weight:500;}
-.gp-col-side{display:flex;flex-direction:column;gap:20px;}
+.gp-col-side{display:flex;flex-direction:column;gap:24px;}
+.gp-side-block{display:flex;flex-direction:column;}
 .gp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
 .gp-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column;}
 .gp-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2);}
