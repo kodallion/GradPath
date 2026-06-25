@@ -1,5 +1,7 @@
 "use client";
 
+import "./shell.css";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
