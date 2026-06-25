@@ -218,7 +218,7 @@ export default function ApplicationsClient({
   }
 
   return (
-    <div className="gp-content">
+    <div className="gp-applications-page">
       <div className="gp-pagehead">
         <div>
           <h1 className="gp-pagetitle">Applications</h1>
