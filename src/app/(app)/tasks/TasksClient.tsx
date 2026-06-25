@@ -1,45 +1,29 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 import "./tasks.css";
-import type { Application, Task } from "@/types";
-
-type AppWithTasks = Omit<Application, "tasks" | "documents"> & {
-  tasks: Task[];
-};
-
-const FLAGS: Record<string, string> = {
-  "United Kingdom": "🇬🇧", "United States": "🇺🇸", Canada: "🇨🇦", Germany: "🇩🇪",
-  Netherlands: "🇳🇱", France: "🇫🇷", Australia: "🇦🇺", Nigeria: "🇳🇬",
-};
-function flagFor(country: string) {
-  return FLAGS[country] || "🌍";
-}
-
-function fmtDate(deadline: Date | string) {
-  return new Date(deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
-
-function pctColor(pct: number) {
-  if (pct >= 70) return "#22A565";
-  if (pct >= 40) return "#E8A33D";
-  return "#D45B5B";
-}
+import type { ApplicationStatus } from "@/types";
+import {
+  AppDrawer,
+  flagFor,
+  fmtDate,
+  pctColor,
+  type AppWithRels,
+} from "@/components/appShared";
 
 type FilterMode = "pending" | "done" | "all";
 
-const CheckIcon = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-);
 const DoneIcon = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
 );
+const CheckIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+);
 
-export default function TasksClient({ applications: initial }: { applications: AppWithTasks[] }) {
-  const router = useRouter();
-  const [apps, setApps] = useState<AppWithTasks[]>(initial);
+export default function TasksClient({ applications: initial }: { applications: AppWithRels[] }) {
+  const [apps, setApps] = useState<AppWithRels[]>(initial);
   const [filter, setFilter] = useState<FilterMode>("pending");
+  const [drawerId, setDrawerId] = useState<string | null>(null);
 
   const allTasks = apps.flatMap((a) => a.tasks);
   const pendingCount = allTasks.filter((t) => !t.completed).length;
@@ -47,14 +31,32 @@ export default function TasksClient({ applications: initial }: { applications: A
   const totalCount = allTasks.length;
   const appsWithPending = apps.filter((a) => a.tasks.some((t) => !t.completed)).length;
 
+  const drawerApp = apps.find((a) => a.id === drawerId) || null;
+
+  useEffect(() => {
+    document.body.style.overflow = drawerId ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerId]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerId(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const patchApp = (id: string, partial: Partial<AppWithRels>) =>
+    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, ...partial } : a)));
+
   async function toggleTask(appId: string, taskId: string, completed: boolean) {
-    setApps((prev) =>
-      prev.map((a) =>
-        a.id === appId
-          ? { ...a, tasks: a.tasks.map((t) => (t.id === taskId ? { ...t, completed } : t)) }
-          : a
-      )
-    );
+    patchApp(appId, {
+      tasks: (apps.find((a) => a.id === appId)?.tasks || []).map((t) =>
+        t.id === taskId ? { ...t, completed } : t
+      ),
+    });
     await fetch(`/api/tasks/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -62,7 +64,34 @@ export default function TasksClient({ applications: initial }: { applications: A
     });
   }
 
-  // Groups to render: each application that has at least one task matching the filter
+  async function changeStatus(appId: string, status: ApplicationStatus) {
+    patchApp(appId, { status });
+    await fetch(`/api/applications/${appId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async function addTask(appId: string, title: string) {
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationId: appId, title }),
+    });
+    if (res.ok) {
+      const task = await res.json();
+      const cur = apps.find((a) => a.id === appId)?.tasks || [];
+      patchApp(appId, { tasks: [...cur, task] });
+    }
+  }
+
+  async function deleteTask(appId: string, taskId: string) {
+    const cur = apps.find((a) => a.id === appId)?.tasks || [];
+    patchApp(appId, { tasks: cur.filter((t) => t.id !== taskId) });
+    await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+  }
+
   const groups = useMemo(() => {
     return apps
       .map((a) => {
@@ -141,10 +170,7 @@ export default function TasksClient({ applications: initial }: { applications: A
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
             return (
               <section className="gp-panel gp-taskgroup" key={app.id}>
-                <div
-                  className="gp-taskgroup-head"
-                  onClick={() => router.push("/applications")}
-                >
+                <div className="gp-taskgroup-head" onClick={() => setDrawerId(app.id)}>
                   <span className="gp-tflag">{flagFor(app.country)}</span>
                   <div className="gp-taskgroup-meta">
                     <div className="gp-taskgroup-uni">{app.universityName}</div>
@@ -182,6 +208,17 @@ export default function TasksClient({ applications: initial }: { applications: A
             );
           })}
         </div>
+      )}
+
+      {drawerApp && (
+        <AppDrawer
+          app={drawerApp}
+          onClose={() => setDrawerId(null)}
+          onToggleTask={(taskId, completed) => toggleTask(drawerApp.id, taskId, completed)}
+          onChangeStatus={(status) => changeStatus(drawerApp.id, status)}
+          onAddTask={(title) => addTask(drawerApp.id, title)}
+          onDeleteTask={(taskId) => deleteTask(drawerApp.id, taskId)}
+        />
       )}
     </div>
   );

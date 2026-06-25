@@ -14,6 +14,7 @@ export default async function TasksPage() {
     where: { userId: user.id },
     include: {
       tasks: { orderBy: { createdAt: "asc" } },
+      documents: { select: { id: true, type: true } },
     },
     orderBy: { deadline: "asc" },
   });
