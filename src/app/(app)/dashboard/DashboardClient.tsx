@@ -93,7 +93,7 @@ export default function DashboardClient({ user, applications }: Props) {
             {today} · {totalApps} application{totalApps === 1 ? "" : "s"}
           </p>
         </div>
-        <Link href="/applications/new" className="gp-addbtn">
+        <Link href="/applications?add=1" className="gp-addbtn">
           <Plus size={16} /> <span>Add application</span>
         </Link>
       </div>

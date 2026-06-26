@@ -83,6 +83,24 @@ export default function ApplicationsClient({
     };
   }, [addOpen, drawerId]);
 
+  // Open the add drawer automatically when arriving with ?add=1 (e.g. from Dashboard)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("add") === "1") {
+      if (atLimit) {
+        router.push("/settings?tab=billing");
+      } else {
+        setAddOpen(true);
+      }
+      // clean the query param so refresh/back doesn't re-trigger
+      const url = new URL(window.location.href);
+      url.searchParams.delete("add");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Escape closes overlays
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
