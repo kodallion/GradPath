@@ -71,7 +71,11 @@ export default function DocumentsClient({ applications: initial }: { application
   }, [toast]);
 
   useEffect(() => {
-    const onClick = () => setOpenMenu(null);
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest(".gp-docmenu")) return;
+      setOpenMenu(null);
+    };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
