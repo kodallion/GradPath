@@ -8,7 +8,7 @@
 @media (max-width:768px){.gp-pagehead{align-items:center;}}
 .gp-panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .gp-panelhead h2{font-size:15px;font-weight:700;}
-.gp-setstack{display:flex;flex-direction:column;gap:18px;max-width:760px;}
+.gp-setstack{display:flex;flex-direction:column;gap:18px;}
 .gp-profile{display:flex;gap:22px;margin-bottom:20px;}
 .gp-avatar-wrap{position:relative;flex-shrink:0;width:64px;height:64px;}
 .gp-profile-avatar{width:64px;height:64px;border-radius:999px;background:linear-gradient(180deg,var(--blue-hi),var(--blue));color:#fff;font-size:21px;font-weight:700;display:grid;place-items:center;flex-shrink:0;overflow:hidden;}
