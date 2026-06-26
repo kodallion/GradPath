@@ -5,6 +5,7 @@ import "./ai-review.css";
 import type { Application, Document } from "@/types";
 import type { ReviewResult, ReviewAnnotation } from "@/lib/aiReview";
 import { flagFor } from "@/components/appShared";
+import { extractText } from "./extractText";
 
 type DocLite = Pick<Document, "id" | "type" | "fileName">;
 type AppLite = Omit<Application, "tasks" | "documents"> & { documents: DocLite[] };
@@ -32,18 +33,17 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/* ---------- icons ---------- */
-const Spark = ({ s = 14 }: { s?: number }) => (
-  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M12 17v4" /><path d="M3 12h4" /><path d="M17 12h4" /><path d="M5.6 5.6l2.8 2.8" /><path d="M15.6 15.6l2.8 2.8" /><path d="M18.4 5.6l-2.8 2.8" /><path d="M8.4 15.6l-2.8 2.8" /></svg>
-);
+/* icons */
+const Spark = ({ s = 14 }: { s?: number }) => (<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4" /><path d="M12 17v4" /><path d="M3 12h4" /><path d="M17 12h4" /><path d="M5.6 5.6l2.8 2.8" /><path d="M15.6 15.6l2.8 2.8" /><path d="M18.4 5.6l-2.8 2.8" /><path d="M8.4 15.6l-2.8 2.8" /></svg>);
 const Bolt = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" /></svg>);
 const Check = ({ s = 13 }: { s?: number }) => (<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>);
-const X = ({ s = 13 }: { s?: number }) => (<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="M6 6l12 12" /></svg>);
+const XIco = ({ s = 13 }: { s?: number }) => (<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="M6 6l12 12" /></svg>);
 const Back = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="M11 18l-6-6 6-6" /></svg>);
 const Lock = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>);
-const Copy = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>);
+const CopyIco = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>);
+const UploadIco = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>);
+const Plus = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>);
 
-/* ---------- span matching: wrap verbatim annotation spans in the doc text ---------- */
 function buildSegments(text: string, annotations: ReviewAnnotation[]) {
   type Seg = { text: string; ann?: ReviewAnnotation };
   const hits: { start: number; end: number; ann: ReviewAnnotation }[] = [];
@@ -53,14 +53,10 @@ function buildSegments(text: string, annotations: ReviewAnnotation[]) {
     if (idx >= 0) hits.push({ start: idx, end: idx + ann.span.length, ann });
   }
   hits.sort((a, b) => a.start - b.start);
-  // drop overlaps (keep earliest)
   const clean: typeof hits = [];
   let cursor = 0;
   for (const h of hits) {
-    if (h.start >= cursor) {
-      clean.push(h);
-      cursor = h.end;
-    }
+    if (h.start >= cursor) { clean.push(h); cursor = h.end; }
   }
   const segs: Seg[] = [];
   let pos = 0;
@@ -74,10 +70,7 @@ function buildSegments(text: string, annotations: ReviewAnnotation[]) {
 }
 
 export default function AIReviewClient({
-  applications,
-  reviews,
-  plan,
-  usedToday,
+  applications, reviews, plan, usedToday,
 }: {
   applications: AppLite[];
   reviews: ReviewRecord[];
@@ -85,27 +78,28 @@ export default function AIReviewClient({
   usedToday: number;
 }) {
   const isPro = plan === "PRO";
-  const [view, setView] = useState<"overview" | "running" | "review">("overview");
+  const [view, setView] = useState<"overview" | "runner" | "running" | "review">("overview");
   const [appId, setAppId] = useState<string>(applications[0]?.id || "");
   const [docType, setDocType] = useState<"SOP" | "CV">("SOP");
   const [text, setText] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [showPaste, setShowPaste] = useState(false);
   const [error, setError] = useState("");
+  const [extracting, setExtracting] = useState(false);
   const [used, setUsed] = useState(usedToday);
 
-  // active review being viewed
   const [active, setActive] = useState<{ result: ReviewResult; version: number; type: "SOP" | "CV"; appId: string; docText: string } | null>(null);
   const [activeNote, setActiveNote] = useState<string | null>(null);
   const [noteFilter, setNoteFilter] = useState<"all" | "good" | "improve">("all");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const noteRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const remaining = isPro ? Infinity : Math.max(0, FREE_DAILY - used);
   const limitReached = !isPro && remaining <= 0;
 
-  // parse stored reviews -> overview entries: latest per (appId via documentId, type)
   const overviewByApp = useMemo(() => {
     const map: Record<string, { SOP?: ReviewRecord; CV?: ReviewRecord; SOPcount: number; CVcount: number }> = {};
-    // group reviews by which application they belong to (via documentId -> document -> app)
     const docToApp: Record<string, string> = {};
     for (const a of applications) for (const d of a.documents) docToApp[d.id] = a.id;
     for (const r of reviews) {
@@ -113,27 +107,47 @@ export default function AIReviewClient({
       if (!aId) continue;
       if (!map[aId]) map[aId] = { SOPcount: 0, CVcount: 0 };
       const slot = map[aId];
-      if (r.type === "SOP") {
-        slot.SOPcount++;
-        if (!slot.SOP) slot.SOP = r; // first = latest (ordered desc)
-      } else {
-        slot.CVcount++;
-        if (!slot.CV) slot.CV = r;
-      }
+      if (r.type === "SOP") { slot.SOPcount++; if (!slot.SOP) slot.SOP = r; }
+      else { slot.CVcount++; if (!slot.CV) slot.CV = r; }
     }
     return map;
   }, [applications, reviews]);
 
+  function openRunner() {
+    setError(""); setText(""); setFileName(""); setShowPaste(false);
+    setView("runner");
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError("");
+    setExtracting(true);
+    setFileName(file.name);
+    try {
+      const extracted = await extractText(file);
+      if (!extracted || extracted.length < 100) {
+        setError("Could not read enough text from that file. Try another file or paste the text.");
+        setText("");
+      } else {
+        setText(extracted);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not read that file. Paste the text instead.");
+      setShowPaste(true);
+    } finally {
+      setExtracting(false);
+    }
+  }
+
   async function runReview() {
     setError("");
     if (text.trim().length < 100) {
-      setError("Please paste at least 100 characters of your document.");
+      setError("Add at least 100 characters — upload a file or paste your text.");
       return;
     }
-    if (limitReached) {
-      setShowUpgrade(true);
-      return;
-    }
+    if (limitReached) { setShowUpgrade(true); return; }
     setView("running");
     try {
       const res = await fetch("/api/ai/review", {
@@ -143,23 +157,18 @@ export default function AIReviewClient({
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.error === "AI_LIMIT_REACHED") {
-          setError(data.message || "Daily limit reached.");
-          setShowUpgrade(true);
-        } else {
-          setError(data.error || "Review failed. Please try again.");
-        }
-        setView("overview");
+        if (data.error === "AI_LIMIT_REACHED") { setError(data.message || "Daily limit reached."); setShowUpgrade(true); }
+        else setError(data.error || "Review failed. Please try again.");
+        setView("runner");
         return;
       }
       if (!isPro) setUsed((u) => u + 1);
       setActive({ result: data.result, version: data.version, type: docType, appId, docText: text });
-      setActiveNote(null);
-      setNoteFilter("all");
+      setActiveNote(null); setNoteFilter("all");
       setView("review");
     } catch {
       setError("Something went wrong. Please try again.");
-      setView("overview");
+      setView("runner");
     }
   }
 
@@ -169,14 +178,10 @@ export default function AIReviewClient({
     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function copyRewrite(textToCopy: string) {
-    navigator.clipboard?.writeText(textToCopy);
-  }
-
   const appName = (id: string) => applications.find((a) => a.id === id)?.universityName || "Document";
   const appCountry = (id: string) => applications.find((a) => a.id === id)?.country || "";
 
-  /* ====================== RUNNING ====================== */
+  /* ============ RUNNING ============ */
   if (view === "running") {
     return (
       <div className="gp-aireview-page">
@@ -191,7 +196,7 @@ export default function AIReviewClient({
     );
   }
 
-  /* ====================== REVIEW (drill-in) ====================== */
+  /* ============ REVIEW ============ */
   if (view === "review" && active) {
     const r = active.result;
     const segs = buildSegments(active.docText, r.annotations);
@@ -206,12 +211,9 @@ export default function AIReviewClient({
           <button className="gp-ai-backbtn" onClick={() => setView("overview")}><Back /> Back to overview</button>
         </div>
 
-        {/* sticky header */}
         <div className="gp-review-sticky">
           <div className="gp-review-topmeta">
-            <span className="gp-review-score" style={{ borderColor: scoreColor(r.overallScore), color: scoreColor(r.overallScore) }}>
-              {r.overallScore.toFixed(1)}
-            </span>
+            <span className="gp-review-score" style={{ borderColor: scoreColor(r.overallScore), color: scoreColor(r.overallScore) }}>{r.overallScore.toFixed(1)}</span>
             <div>
               <div className="gp-review-title">{active.type === "SOP" ? "Statement of Purpose" : "Academic CV"} — v{active.version}</div>
               <div className="gp-review-sub">
@@ -221,13 +223,9 @@ export default function AIReviewClient({
               </div>
             </div>
           </div>
-          <div className={`gp-verdict gp-verdict-${r.verdict}`}>
-            {r.verdict === "ready" ? <Check s={14} /> : <Bolt />}
-            {r.verdict === "ready" ? "Ready to submit" : "Not yet ready"}
-          </div>
+          <div className={`gp-verdict gp-verdict-${r.verdict}`}>{r.verdict === "ready" ? <Check s={14} /> : <Bolt />}{r.verdict === "ready" ? "Ready to submit" : "Not yet ready"}</div>
         </div>
 
-        {/* flag banner */}
         {r.flags && r.flags.length > 0 && (
           <div className="gp-flagbanner">
             <div className="gp-flagbanner-head"><Bolt /> Address these before submitting</div>
@@ -235,10 +233,8 @@ export default function AIReviewClient({
           </div>
         )}
 
-        {/* lead */}
         {r.lead && <div className="gp-review-lead">{r.lead}</div>}
 
-        {/* rubric */}
         {r.rubric.length > 0 && (
           <div className="gp-rubric-card">
             <div className="gp-rubric-head"><h3>Rubric breakdown</h3><span className="gp-rubric-version">{active.type.toLowerCase()}-v{active.version}</span></div>
@@ -253,7 +249,6 @@ export default function AIReviewClient({
           </div>
         )}
 
-        {/* top fixes */}
         {r.topFixes.length > 0 && (
           <div className="gp-topfixes-card">
             <h3><Bolt /> Top fixes before submitting</h3>
@@ -270,7 +265,6 @@ export default function AIReviewClient({
           </div>
         )}
 
-        {/* cliches */}
         {r.cliches.length > 0 && (
           <div className="gp-clicherow">
             <span className="gp-clicherow-label"><Bolt /> Clichés detected</span>
@@ -278,21 +272,17 @@ export default function AIReviewClient({
           </div>
         )}
 
-        {/* readiness */}
         {r.readiness.length > 0 && (
           <div className="gp-readiness-row">
             <span className="gp-readiness-label">Submission readiness</span>
             <div className="gp-check-list">
               {r.readiness.map((item, i) => (
-                <div className={`gp-check-item ${item.pass ? "pass" : "fail"}`} key={i}>
-                  {item.pass ? <Check /> : <X />} {item.label}
-                </div>
+                <div className={`gp-check-item ${item.pass ? "pass" : "fail"}`} key={i}>{item.pass ? <Check /> : <XIco />} {item.label}</div>
               ))}
             </div>
           </div>
         )}
 
-        {/* issue filters */}
         <div className="gp-issue-filters">
           <div className="gp-chipgroup">
             <button className={`gp-chip${noteFilter === "all" ? " on" : ""}`} onClick={() => setNoteFilter("all")}>All <span className="gp-chip-count">{r.annotations.length}</span></button>
@@ -301,23 +291,15 @@ export default function AIReviewClient({
           </div>
         </div>
 
-        {/* split: document + notes */}
         <div className="gp-review-split">
           <div className="gp-doc-pane">
             <p>
               {segs.map((seg, i) =>
                 seg.ann ? (
-                  <span
-                    key={i}
-                    className={`gp-doc-span ${seg.ann.tag}${activeNote === seg.ann.id ? " active" : ""}`}
-                    onClick={() => openNote(seg.ann!.id)}
-                  >
-                    {seg.text}
-                    <sup className="gp-span-num">{r.annotations.findIndex((a) => a.id === seg.ann!.id) + 1}</sup>
+                  <span key={i} className={`gp-doc-span ${seg.ann.tag}${activeNote === seg.ann.id ? " active" : ""}`} onClick={() => openNote(seg.ann!.id)}>
+                    {seg.text}<sup className="gp-span-num">{r.annotations.findIndex((a) => a.id === seg.ann!.id) + 1}</sup>
                   </span>
-                ) : (
-                  <span key={i}>{seg.text}</span>
-                )
+                ) : (<span key={i}>{seg.text}</span>)
               )}
             </p>
           </div>
@@ -326,20 +308,13 @@ export default function AIReviewClient({
             {filtered.map((a) => {
               const num = r.annotations.findIndex((x) => x.id === a.id) + 1;
               return (
-                <div
-                  key={a.id}
-                  ref={(el) => { noteRefs.current[a.id] = el; }}
-                  className={`gp-note ${a.tag} sev-${a.severity}${activeNote === a.id ? " active" : ""}`}
-                  onClick={() => setActiveNote(a.id)}
-                >
+                <div key={a.id} ref={(el) => { noteRefs.current[a.id] = el; }} className={`gp-note ${a.tag} sev-${a.severity}${activeNote === a.id ? " active" : ""}`} onClick={() => setActiveNote(a.id)}>
                   <div className="gp-note-head">
                     <span className={`gp-note-num ${a.tag === "good" ? "gp-num-good" : "gp-num-improve"}`}>{num}</span>
                     <div className="gp-note-headtext">
                       <span className="gp-note-title">{a.title}</span>
                       <span className="gp-note-tags">
-                        {a.tag === "improve" && a.severity !== "none" && (
-                          <span className="gp-sev" style={{ color: sevColor(a.severity), background: `${sevColor(a.severity)}1A` }}>{a.severity}</span>
-                        )}
+                        {a.tag === "improve" && a.severity !== "none" && (<span className="gp-sev" style={{ color: sevColor(a.severity), background: `${sevColor(a.severity)}1A` }}>{a.severity}</span>)}
                         <span className="gp-cat">{a.category}</span>
                       </span>
                     </div>
@@ -352,7 +327,7 @@ export default function AIReviewClient({
                       <div className="gp-rewrite">
                         <div className="gp-rewrite-label"><Spark s={12} /> Suggested rewrite</div>
                         <p>{a.rewrite}</p>
-                        <div className="gp-rewrite-actions"><button onClick={() => copyRewrite(a.rewrite!)}><Copy /> Copy</button></div>
+                        <div className="gp-rewrite-actions"><button onClick={() => navigator.clipboard?.writeText(a.rewrite!)}><CopyIco /> Copy</button></div>
                       </div>
                     )
                   )}
@@ -367,162 +342,119 @@ export default function AIReviewClient({
     );
   }
 
-  /* ====================== OVERVIEW ====================== */
+  /* ============ RUNNER ============ */
+  if (view === "runner") {
+    return (
+      <div className="gp-aireview-page">
+        <div className="gp-ai-backbar">
+          <button className="gp-ai-backbtn" onClick={() => setView("overview")}><Back /> Back to overview</button>
+        </div>
+        <div className="gp-ai-stage">
+          <div className="gp-ai-runner">
+            <div className="gp-ai-runhead">
+              <span className="gp-statico"><Spark s={20} /></span>
+              <div><h2>Run a new review</h2><p>Pick a document and we'll analyse structure, clarity and program fit.</p></div>
+            </div>
+
+            <div className="gp-ai-controls">
+              <label className="gp-field"><span>Document type</span>
+                <select value={docType} onChange={(e) => setDocType(e.target.value as "SOP" | "CV")}>
+                  <option value="SOP">Statement of Purpose</option>
+                  <option value="CV">Curriculum Vitae</option>
+                </select>
+              </label>
+              <label className="gp-field"><span>Application</span>
+                <select value={appId} onChange={(e) => setAppId(e.target.value)}>
+                  {applications.length === 0 && <option value="">No applications yet</option>}
+                  {applications.map((a) => <option key={a.id} value={a.id}>{a.universityName}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" style={{ display: "none" }} onChange={onFile} />
+            <div className="gp-ai-drop" onClick={() => fileRef.current?.click()}>
+              <UploadIco />
+              <span>
+                {extracting ? "Reading your file…" : fileName ? (<><b>{fileName}</b>{text ? " · ready" : ""}</>) : (<><b>Drop a file</b> or click to browse · PDF, DOCX up to 10MB</>)}
+              </span>
+            </div>
+
+            <button type="button" onClick={() => setShowPaste((v) => !v)} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--blue)", alignSelf: "flex-start" }}>
+              {showPaste ? "Hide paste box" : "Or paste text instead"}
+            </button>
+            {showPaste && (
+              <textarea
+                rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder={`Paste your ${docType} text here…`}
+                style={{ fontFamily: "inherit", fontSize: 14, color: "var(--ink)", background: "var(--paper)", border: "1px solid var(--line-2)", borderRadius: 12, padding: "12px 14px", outline: "none", resize: "vertical", lineHeight: 1.6 }}
+              />
+            )}
+
+            {error && <div style={{ fontSize: 13, color: "#B23B3B", background: "#FAE8E8", padding: "10px 14px", borderRadius: 11 }}>{error}</div>}
+
+            <div className="gp-ai-quotarow">
+              <div className="gp-quota-mini">
+                {isPro ? <span><b>Pro</b> · unlimited reviews</span> : <span><b>{remaining}</b> of {FREE_DAILY} reviews left today</span>}
+              </div>
+              <button className="gp-ai-btn" onClick={runReview} disabled={extracting || text.trim().length < 100}>
+                <Spark s={16} /> Run AI review
+              </button>
+            </div>
+          </div>
+        </div>
+        {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      </div>
+    );
+  }
+
+  /* ============ OVERVIEW ============ */
   return (
     <div className="gp-aireview-page">
       <div className="gp-pagehead">
         <div>
           <h1 className="gp-pagetitle">AI Review</h1>
-          <p className="gp-pagesub">Get a rubric-based review of your SOP or CV, with specific fixes and rewrites.</p>
+          <p className="gp-pagesub">Structured feedback on your SOP and CV — scored, annotated, and ready to act on.</p>
         </div>
+        <button className="gp-addbtn" onClick={openRunner}><Plus /> <span>New review</span></button>
       </div>
 
-      {/* Run panel */}
-      <div className="gp-ai-layout">
-        <div className="gp-ai-runner">
-          <div className="gp-ai-runhead">
-            <span className="gp-statico"><Spark s={18} /></span>
-            <div>
-              <h2>Run a new review</h2>
-              <p>Pick the application and document type, paste your text, and get structured feedback in seconds.</p>
-            </div>
-          </div>
-
-          <div className="gp-ai-controls">
-            <label className="gp-field">
-              <span>Application</span>
-              <select value={appId} onChange={(e) => setAppId(e.target.value)}>
-                {applications.length === 0 && <option value="">No applications yet</option>}
-                {applications.map((a) => (
-                  <option key={a.id} value={a.id}>{a.universityName}</option>
-                ))}
-              </select>
-            </label>
-            <label className="gp-field">
-              <span>Document type</span>
-              <select value={docType} onChange={(e) => setDocType(e.target.value as "SOP" | "CV")}>
-                <option value="SOP">Statement of Purpose</option>
-                <option value="CV">CV / Resume</option>
-              </select>
-            </label>
-          </div>
-
-          <label className="gp-field">
-            <span>Paste your {docType === "SOP" ? "Statement of Purpose" : "CV"}</span>
-            <textarea
-              className="gp-ai-textarea"
-              rows={9}
-              placeholder={`Paste your ${docType} text here…`}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              style={{ fontFamily: "inherit", fontSize: 14, color: "var(--ink)", background: "var(--paper)", border: "1px solid var(--line-2)", borderRadius: 12, padding: "12px 14px", outline: "none", resize: "vertical", lineHeight: 1.6 }}
-            />
-            <span style={{ fontSize: 11.5, color: "var(--muted-2)", fontWeight: 500 }}>
-              {text.length} characters{text.length > 0 && text.length < 100 ? " (minimum 100)" : ""}
-            </span>
-          </label>
-
-          {error && (
-            <div style={{ fontSize: 13, color: "#B23B3B", background: "#FAE8E8", padding: "10px 14px", borderRadius: 11 }}>{error}</div>
-          )}
-
-          <div className="gp-ai-quotarow">
-            <div className="gp-quota-mini">
-              {isPro ? (
-                <span><b>Pro</b> · unlimited reviews</span>
-              ) : (
-                <span><b>{remaining}</b> of {FREE_DAILY} free reviews left today</span>
-              )}
-            </div>
-            <button className="gp-ai-btn" onClick={runReview} disabled={text.length < 100}>
-              <Spark s={15} /> Run review
-            </button>
-          </div>
-        </div>
-
-        {/* side quota / upgrade */}
-        <aside className="gp-ai-quota">
-          <div className="gp-quota-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="#EEF0F3" strokeWidth="10" />
-              <circle
-                cx="60" cy="60" r="50" fill="none" stroke="var(--blue)" strokeWidth="10" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 50}`}
-                strokeDashoffset={`${2 * Math.PI * 50 * (isPro ? 0 : 1 - remaining / FREE_DAILY)}`}
-                transform="rotate(-90 60 60)"
-              />
-            </svg>
-            <div className="gp-quota-center">
-              <span className="gp-quota-num">{isPro ? "∞" : remaining}</span>
-              <span className="gp-quota-lab">left</span>
-            </div>
-          </div>
-          {isPro ? (
-            <p className="gp-quota-text">You're on Pro — unlimited reviews, inline rewrites, and version compare.</p>
-          ) : (
-            <>
-              <span className="gp-freepill">FREE PLAN</span>
-              <p className="gp-quota-text" style={{ marginTop: 10 }}>{FREE_DAILY} reviews per day. Upgrade for unlimited reviews and AI rewrites.</p>
-              <button className="gp-planupgrade" onClick={() => setShowUpgrade(true)}>Upgrade to Pro <Spark s={13} /></button>
-            </>
-          )}
-        </aside>
-      </div>
-
-      {/* Overview grid of past reviews */}
       {applications.length === 0 ? (
         <div className="gp-tempty">Add an application first, then run reviews on its documents.</div>
       ) : (
         <div className="gp-ai-grid">
           {applications.map((a) => {
             const ov = overviewByApp[a.id];
+            const hasAny = ov && (ov.SOP || ov.CV);
             return (
               <div className="gp-ai-card" key={a.id}>
                 <div className="gp-ai-card-top">
                   <span className="gp-ai-card-flag">{flagFor(a.country)}</span>
                   <span className="gp-ai-card-uni">{a.universityName}</span>
                 </div>
+                {!hasAny && (
+                  <div className="gp-ai-doctype-row empty">
+                    <div className="gp-ai-doctype-left"><span className="gp-ai-doctype-empty-text">No reviews yet</span></div>
+                    <button className="gp-ai-doctype-pill" style={{ cursor: "pointer", border: "none" }} onClick={() => { setAppId(a.id); openRunner(); }}>Run one</button>
+                  </div>
+                )}
                 {(["SOP", "CV"] as const).map((t) => {
                   const rec = ov?.[t];
+                  if (!rec || rec.overallScore == null) return null;
                   const count = ov ? ov[`${t}count` as "SOPcount" | "CVcount"] : 0;
-                  if (rec && rec.overallScore != null) {
-                    return (
-                      <div
-                        className="gp-ai-doctype-row"
-                        key={t}
-                        onClick={() => {
-                          if (rec.result) {
-                            setActive({ result: rec.result as ReviewResult, version: rec.version, type: t, appId: a.id, docText: (rec.result as ReviewResult).annotations ? reconstructText(rec.result as ReviewResult) : "" });
-                            setActiveNote(null);
-                            setNoteFilter("all");
-                            setView("review");
-                          }
-                        }}
-                      >
-                        <div className="gp-ai-doctype-left">
-                          <span className="gp-ai-doctype-pill">{t}</span>
-                          <span className="gp-ai-doctype-date">{fmtDate(rec.createdAt)}</span>
-                        </div>
-                        <div className="gp-ai-doctype-right">
-                          <span className="gp-ai-versions">v{rec.version}</span>
-                          <span className="gp-ai-mini-score" style={{ color: scoreColor(rec.overallScore) }}>{rec.overallScore}</span>
-                        </div>
-                      </div>
-                    );
-                  }
                   return (
-                    <div className="gp-ai-doctype-row empty" key={t}>
+                    <div className="gp-ai-doctype-row" key={t} onClick={() => {
+                      if (rec.result) {
+                        setActive({ result: rec.result as ReviewResult, version: rec.version, type: t, appId: a.id, docText: reconstructText(rec.result as ReviewResult) });
+                        setActiveNote(null); setNoteFilter("all"); setView("review");
+                      }
+                    }}>
                       <div className="gp-ai-doctype-left">
                         <span className="gp-ai-doctype-pill">{t}</span>
-                        <span className="gp-ai-doctype-empty-text">No review yet</span>
+                        <span className="gp-ai-doctype-date">{fmtDate(rec.createdAt)}</span>
                       </div>
-                      <button
-                        className="gp-ai-doctype-runbtn"
-                        style={{ fontSize: 12, fontWeight: 600, color: "var(--blue-deep)", background: "#EAF1FF", padding: "5px 11px", borderRadius: 999 }}
-                        onClick={() => { setAppId(a.id); setDocType(t); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                      >
-                        Run
-                      </button>
+                      <div className="gp-ai-doctype-right">
+                        {count > 1 && <span className="gp-ai-versions">+{count - 1} earlier</span>}
+                        <span className="gp-ai-mini-score" style={{ color: scoreColor(rec.overallScore) }}>{rec.overallScore}</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -537,29 +469,18 @@ export default function AIReviewClient({
   );
 }
 
-/* When opening a stored review, the original doc text isn't saved separately;
-   reconstruct an approximate flat text from the annotation spans so highlights still resolve.
-   (New reviews opened right after running use the real pasted text.) */
 function reconstructText(result: ReviewResult): string {
-  // Best-effort: join annotation spans with spacing. Good spans + improve spans in order.
   return result.annotations.map((a) => a.span).filter(Boolean).join("\n\n");
 }
 
 function UpgradeModal({ onClose }: { onClose: () => void }) {
   return (
-    <div
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(14,19,32,.5)", display: "grid", placeItems: "center", zIndex: 300, padding: 20 }}
-    >
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(14,19,32,.5)", display: "grid", placeItems: "center", zIndex: 300, padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--paper)", borderRadius: 20, padding: 28, maxWidth: 380, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(16,22,40,.3)" }}>
         <div style={{ width: 48, height: 48, borderRadius: 14, background: "#EAF1FF", color: "var(--blue-deep)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}><Spark s={22} /></div>
         <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 8, color: "var(--ink)" }}>Upgrade to Pro</h2>
-        <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 20 }}>
-          Unlock unlimited daily reviews, inline AI rewrites for every fix, and version comparison across drafts.
-        </p>
-        <a href="/settings?tab=billing" style={{ display: "block", width: "100%", fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(180deg,var(--blue-hi),var(--blue))", padding: "12px 16px", borderRadius: 999, textDecoration: "none", marginBottom: 10 }}>
-          Upgrade to Pro
-        </a>
+        <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 20 }}>Unlock unlimited daily reviews, inline AI rewrites for every fix, and version comparison across drafts.</p>
+        <a href="/settings" style={{ display: "block", width: "100%", fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(180deg,var(--blue-hi),var(--blue))", padding: "12px 16px", borderRadius: 999, textDecoration: "none", marginBottom: 10 }}>Upgrade to Pro</a>
         <button onClick={onClose} style={{ fontSize: 13, color: "var(--muted)", fontWeight: 600 }}>Maybe later</button>
       </div>
     </div>
