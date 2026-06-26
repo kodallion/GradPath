@@ -7,18 +7,20 @@ export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    include: {
+      applications: {
+        include: {
+          tasks: true,
+          documents: { select: { type: true } },
+        },
+        orderBy: { deadline: "asc" },
+      },
+    },
+  });
   if (!user) redirect("/sign-in");
 
-  const applications = await prisma.application.findMany({
-    where: { userId: user.id },
-    include: {
-      tasks: true,
-      documents: { select: { type: true } },
-    },
-    orderBy: { deadline: "asc" },
-  });
-
-  return <DashboardClient user={user} applications={applications} />;
+  const { applications, ...userOnly } = user;
+  return <DashboardClient user={userOnly} applications={applications} />;
 }
-

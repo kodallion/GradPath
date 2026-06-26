@@ -7,17 +7,16 @@ export default async function DocumentsPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    include: {
+      applications: {
+        include: { documents: true },
+        orderBy: { deadline: "asc" },
+      },
+    },
+  });
   if (!user) redirect("/sign-in");
 
-  const applications = await prisma.application.findMany({
-    where: { userId: user.id },
-    include: {
-      documents: true,
-    },
-    orderBy: { deadline: "asc" },
-  });
-
-  return <DocumentsClient applications={applications} />;
+  return <DocumentsClient applications={user.applications} />;
 }
-

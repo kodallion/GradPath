@@ -7,18 +7,19 @@ export default async function TasksPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    include: {
+      applications: {
+        include: {
+          tasks: { orderBy: { createdAt: "asc" } },
+          documents: { select: { id: true, type: true } },
+        },
+        orderBy: { deadline: "asc" },
+      },
+    },
+  });
   if (!user) redirect("/sign-in");
 
-  const applications = await prisma.application.findMany({
-    where: { userId: user.id },
-    include: {
-      tasks: { orderBy: { createdAt: "asc" } },
-      documents: { select: { id: true, type: true } },
-    },
-    orderBy: { deadline: "asc" },
-  });
-
-  return <TasksClient applications={applications} />;
+  return <TasksClient applications={user.applications} />;
 }
-
