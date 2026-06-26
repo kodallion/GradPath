@@ -20,9 +20,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const doc = await prisma.document.findFirst({ where: { id, userId: user.id } });
     if (!doc || !doc.fileUrl) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+    const url = new URL(req.url);
+    const inline = url.searchParams.get("inline") === "1";
+
     const { data, error } = await getSupabaseAdmin().storage
       .from(BUCKET)
-      .createSignedUrl(doc.fileUrl, 60, { download: doc.fileName });
+      .createSignedUrl(doc.fileUrl, 60, inline ? undefined : { download: doc.fileName });
 
     if (error || !data?.signedUrl) {
       return NextResponse.json({ error: "Could not generate download link" }, { status: 500 });
@@ -33,4 +36,3 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

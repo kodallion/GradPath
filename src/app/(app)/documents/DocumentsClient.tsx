@@ -31,6 +31,9 @@ const FileIcon = ({ s = 20 }: { s?: number }) => (
 const UploadIcon = ({ s = 14 }: { s?: number }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
 );
+const EyeIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
+);
 const DownloadIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></svg>
 );
@@ -125,6 +128,10 @@ export default function DocumentsClient({ applications: initial }: { application
     window.open(`/api/documents/${docId}/download`, "_blank");
   }
 
+  function view(docId: string) {
+    window.open(`/api/documents/${docId}/download?inline=1`, "_blank");
+  }
+
   async function remove(appId: string, docId: string) {
     setApps((prev) =>
       prev.map((a) =>
@@ -216,11 +223,11 @@ export default function DocumentsClient({ applications: initial }: { application
                               <DotsIcon />
                             </button>
                             <div className={`gp-docmenu-dd${openMenu === key ? " open" : ""}`}>
+                              <button onClick={(e) => { e.stopPropagation(); view(doc!.id); setOpenMenu(null); }}>
+                                <EyeIcon /> View
+                              </button>
                               <button onClick={(e) => { e.stopPropagation(); download(doc!.id); setOpenMenu(null); }}>
                                 <DownloadIcon /> Download
-                              </button>
-                              <button onClick={(e) => { e.stopPropagation(); setOpenMenu(null); pickFile(app.id, c.type); }}>
-                                <UploadIcon /> Replace file
                               </button>
                               <button className="danger" onClick={(e) => { e.stopPropagation(); remove(app.id, doc!.id); }}>
                                 <TrashIcon /> Delete
@@ -307,4 +314,3 @@ export default function DocumentsClient({ applications: initial }: { application
     </div>
   );
 }
-
