@@ -13,6 +13,7 @@ model User {
   email                      String    @unique
   name                       String?
   plan                       Plan      @default(FREE)
+  preferences   Json?
   subscriptionStatus         String?
   trialEndsAt                DateTime?
   planExpiresAt              DateTime?
