@@ -53,8 +53,9 @@
 .au-hint{font-size:12px;color:var(--muted-2);margin-top:6px;}
 .gp-field input:focus,.gp-field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(63,117,255,.14);}
 .gp-field input::placeholder{color:var(--muted-2);}
-.gp-btn-ghost{font-size:13.5px;font-weight:600;color:var(--muted);padding:9px 16px;border-radius:999px;}
+.gp-btn-ghost{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--muted);padding:9px 16px;border-radius:999px;white-space:nowrap;}
 .gp-btn-ghost:hover{background:var(--bg);}
+.gp-btn-ghost svg{flex-shrink:0;}
 .gp-btn-primary{font-size:13.5px;font-weight:600;color:#fff;padding:9px 18px;border-radius:999px;background:linear-gradient(180deg,var(--blue-hi),var(--blue));box-shadow:0 4px 14px rgba(63,117,255,.28);}
 .gp-btn-primary:hover{filter:brightness(1.04);}
 .gp-btn-primary:disabled{background:var(--line-2)!important;color:var(--muted-2);box-shadow:none;cursor:not-allowed;}
