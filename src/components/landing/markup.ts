@@ -356,7 +356,7 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
     </div>
     <div class="foot-col"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">How it works</a><a href="#faq">FAQ</a></div>
     <div class="foot-col"><h4>Company</h4><a href="#">About</a><a href="#">Blog</a><a href="#">Contact</a></div>
-    <div class="foot-col"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a></div>
+    <div class="foot-col"><h4>Legal</h4><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
   </div>
   <div class="foot-bottom" style="margin:0 auto;">
     <span>© 2026 GradPath. All rights reserved.</span>
