@@ -40,10 +40,6 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
 
     <!-- Animated hero illustration: dashboard with self-checking tasks -->
     <div class="mock reveal" id="mock">
-      <div class="mock-float mock-float-1">
-        <span class="mock-float-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
-        <span><span class="ft">SOP reviewed</span><span class="fs">Score 82 · ready</span></span>
-      </div>
       <div class="mock-bar"><i></i><i></i><i></i><span class="mock-url">app.gradpath.io/dashboard</span></div>
       <div class="mock-body">
         <div class="mock-side">
