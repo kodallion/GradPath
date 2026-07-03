@@ -11,7 +11,7 @@
 .gp-chip.on .gp-chip-count{background:rgba(255,255,255,.25);}
 .gp-sort{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);}
 .gp-sort select{font-family:inherit;font-size:13px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:10px;padding:7px 32px 7px 12px;outline:none;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%236B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');background-repeat:no-repeat;background-position:right 10px center;background-size:14px;}
-.gp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.gp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
 .gp-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column;}
 .gp-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2);}
 .gp-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
