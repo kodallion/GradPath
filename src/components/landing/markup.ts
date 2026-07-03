@@ -349,7 +349,7 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
         <p>Every application, one calm place. Built for graduate applicants who want clarity, not chaos.</p>
       </div>
       <div class="foot-col"><h4>Product</h4><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a></div>
-      <div class="foot-col"><h4>Company</h4><a href="#">About</a><a href="#faq">FAQ</a><a href="#">Contact</a></div>
+      <div class="foot-col"><h4>Company</h4><a href="#faq">FAQ</a><a href="mailto:adeyemioluwakorede8@gmail.com">Contact</a></div>
       <div class="foot-col"><h4>Legal</h4><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
     </div>
     <div class="foot-bottom"><span>© 2026 GradPath. All rights reserved.</span><span>Made for applicants, worldwide.</span></div>
