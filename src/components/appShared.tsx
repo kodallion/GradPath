@@ -101,6 +101,7 @@ export function AppDrawer({
   onChangeStatus,
   onAddTask,
   onDeleteTask,
+  onDeleteApp,
 }: {
   app: AppWithRels;
   onClose: () => void;
@@ -108,9 +109,11 @@ export function AppDrawer({
   onChangeStatus: (status: ApplicationStatus) => void;
   onAddTask: (title: string) => void;
   onDeleteTask: (taskId: string) => void;
+  onDeleteApp?: () => void;
 }) {
   const [newTask, setNewTask] = useState("");
   const [statusOpen, setStatusOpen] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
   const meta = STATUS_META[app.status];
   const pct = completion(app.tasks);
   const done = app.tasks.filter((t) => t.completed).length;
@@ -294,6 +297,42 @@ export function AppDrawer({
             <SparkIcon /> Run AI review on SOP
           </button>
         </div>
+
+        {onDeleteApp && (
+          <div style={{ padding: "8px 26px 26px" }}>
+            {confirmDel ? (
+              <div style={{ border: "1px solid #F3D3D0", background: "#FDF4F3", borderRadius: 14, padding: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#B3261E", marginBottom: 6 }}>
+                  Delete this application?
+                </div>
+                <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 14px", lineHeight: 1.5 }}>
+                  {app.universityName} and all of its tasks and documents will be permanently removed. This cannot be undone.
+                </p>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    style={{ background: "#fff", color: "#1B2230", border: "1px solid #E1E4E9", borderRadius: 999, padding: "9px 18px", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
+                    onClick={() => setConfirmDel(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    style={{ background: "#B3261E", color: "#fff", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
+                    onClick={onDeleteApp}
+                  >
+                    Yes, delete
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                style={{ width: "100%", background: "none", border: "1px solid #EFD8D6", color: "#B3261E", borderRadius: 12, padding: "11px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => setConfirmDel(true)}
+              >
+                Delete application
+              </button>
+            )}
+          </div>
+        )}
       </aside>
     </div>
   );

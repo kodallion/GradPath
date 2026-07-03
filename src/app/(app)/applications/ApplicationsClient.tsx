@@ -152,6 +152,17 @@ export default function ApplicationsClient({
     }
   }
 
+  async function deleteApp(appId: string) {
+    const snapshot = apps;
+    setApps((prev) => prev.filter((a) => a.id !== appId));
+    setDrawerId(null);
+    const res = await fetch(`/api/applications/${appId}`, { method: "DELETE" });
+    if (!res.ok) {
+      setApps(snapshot);
+      alert("Could not delete the application. Please try again.");
+    }
+  }
+
   async function deleteTask(appId: string, taskId: string) {
     const cur = apps.find((a) => a.id === appId)?.tasks || [];
     patchApp(appId, { tasks: cur.filter((t) => t.id !== taskId) });
@@ -303,6 +314,7 @@ export default function ApplicationsClient({
           onChangeStatus={(status) => changeStatus(drawerApp.id, status)}
           onAddTask={(title) => addTask(drawerApp.id, title)}
           onDeleteTask={(taskId) => deleteTask(drawerApp.id, taskId)}
+          onDeleteApp={() => deleteApp(drawerApp.id)}
         />
       )}
     </div>
