@@ -241,7 +241,7 @@ function AppCard({
   const missing = missingDocsCount(app.documents);
 
   return (
-    <Link href={`/applications/${app.id}`} className="gp-card">
+    <Link href={`/applications?open=${app.id}`} className="gp-card">
       <div className="gp-card-top">
         <span className="gp-card-flag">{app.country ? countryFlag(app.country) : "🌍"}</span>
         <span className="gp-badge" style={{ color: badge.fg, background: badge.bg }}>

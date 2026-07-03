@@ -98,6 +98,13 @@ export default function ApplicationsClient({
       url.searchParams.delete("add");
       window.history.replaceState({}, "", url.pathname + url.search);
     }
+    const openId = params.get("open");
+    if (openId) {
+      setDrawerId(openId);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("open");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
