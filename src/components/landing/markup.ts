@@ -192,8 +192,8 @@ export const LANDING_HTML = `<nav class="nav" id="gp-nav">
       </div>
       <div class="step reveal d3">
         <div class="step-art">
-          <div class="mm" style="max-width:230px;text-align:center">
-            <div style="display:grid;place-items:center;gap:8px"><span class="mm-score" style="width:60px;height:60px;font-size:24px;border-radius:16px">82</span><div class="mm-t">Ready to submit</div><div style="display:flex;gap:5px"><span class="mm-chip" style="color:var(--green-deep);background:var(--green-wash)">Clarity 8/10</span><span class="mm-chip" style="color:var(--blue-deep);background:var(--blue-wash)">Strength 9/10</span></div></div>
+          <div class="mm" style="max-width:230px">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 10px"><span class="mm-score" style="width:60px;height:60px;font-size:24px;border-radius:16px;flex:0 0 auto">82</span><div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px"><div class="mm-t">Ready to submit</div><div style="display:flex;gap:5px"><span class="mm-chip" style="color:var(--green-deep);background:var(--green-wash)">Clarity 8/10</span><span class="mm-chip" style="color:var(--blue-deep);background:var(--blue-wash)">Strength 9/10</span></div></div></div>
           </div>
         </div>
         <div class="step-num"><b>3</b><span>Polish</span></div>
