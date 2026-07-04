@@ -122,9 +122,19 @@ export default function DashboardClient({ user, applications }: Props) {
             <span className="gp-count">{totalApps} total</span>
           </div>
           <div className="gp-grid">
-            {applications.slice(0, 5).map((app) => (
-              <AppCard key={app.id} app={app} />
-            ))}
+            {totalApps === 0 ? (
+              <Link href="/applications?add=1" className="gp-card gp-addcard">
+                <div className="gp-addcircle">
+                  <Plus size={20} />
+                </div>
+                <div className="gp-addlabel">Add your first application</div>
+                <div className="gp-addsub">Track deadlines, tasks, and documents for every school in one place.</div>
+              </Link>
+            ) : (
+              applications.slice(0, 5).map((app) => (
+                <AppCard key={app.id} app={app} />
+              ))
+            )}
           </div>
         </div>
 

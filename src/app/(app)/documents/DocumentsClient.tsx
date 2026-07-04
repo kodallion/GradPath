@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import "./documents.css";
 import type { Application, Document, DocumentType } from "@/types";
-import { flagFor } from "@/components/appShared";
+import { flagFor, EmptyState } from "@/components/appShared";
 
 type AppWithDocs = Omit<Application, "tasks" | "documents"> & {
   documents: Document[];
@@ -159,13 +160,17 @@ export default function DocumentsClient({ applications: initial }: { application
             <p className="gp-pagesub">No applications yet</p>
           </div>
         </div>
-        <div className="gp-alldone">
-          <div className="gp-empty-ico" style={{ color: "var(--muted)" }}>
-            <FolderIcon />
-          </div>
-          <h2>No documents to manage</h2>
-          <p>Add an application first, then track its documents here.</p>
-        </div>
+        <EmptyState
+          tone="neutral"
+          icon={<FolderIcon />}
+          heading="No documents to manage"
+          text="Add an application first, then track its documents here."
+          action={
+            <Link href="/applications?add=1" className="gp-addbtn">
+              <PlusIcon /> <span>Add application</span>
+            </Link>
+          }
+        />
       </div>
     );
   }

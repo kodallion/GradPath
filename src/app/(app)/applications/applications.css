@@ -26,7 +26,15 @@
 .gp-card-foot{display:flex;align-items:center;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
 .gp-card-open{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--blue);background:#EAF1FF;padding:7px 14px;border-radius:999px;transition:background .15s;}
 .gp-card:hover .gp-card-open{background:#DDE9FF;}
-.gp-tempty{padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;background:var(--paper);border:1px solid var(--line);border-radius:16px;}
+.gp-alldone{padding:60px 20px;text-align:center;background:var(--paper);border:1px solid var(--line);border-radius:16px;}
+.gp-empty-ico{width:52px;height:52px;border-radius:999px;display:grid;place-items:center;margin:0 auto 16px;}
+.gp-empty-ico-blue{background:#EAF1FF;color:var(--blue-deep);}
+.gp-empty-ico-green{background:var(--green-bg);color:var(--green);}
+.gp-empty-ico-neutral{background:var(--line);color:var(--muted);}
+.gp-alldone h2{font-size:18px;font-weight:700;margin-bottom:6px;}
+.gp-alldone p{font-size:13.5px;color:var(--muted);max-width:340px;margin:0 auto;line-height:1.55;}
+.gp-empty-action{margin-top:18px;}
+.gp-empty-action .gp-addbtn{display:inline-flex;}
 .gp-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap;padding:4px 10px;border-radius:999px;}
 .gp-badge .dot{width:6px;height:6px;border-radius:999px;}
 .gp-prog-track{height:7px;border-radius:999px;background:#EEF0F3;overflow:hidden;}

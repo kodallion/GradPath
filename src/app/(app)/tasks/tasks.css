@@ -26,9 +26,14 @@
 .gp-task-title{font-size:13.5px;color:var(--ink);}
 .gp-task.done .gp-task-title{color:var(--muted);text-decoration:line-through;}
 .gp-alldone{padding:60px 20px;text-align:center;}
-.gp-empty-ico{width:52px;height:52px;border-radius:999px;background:var(--green-bg);display:grid;place-items:center;margin:0 auto 16px;}
+.gp-empty-ico{width:52px;height:52px;border-radius:999px;display:grid;place-items:center;margin:0 auto 16px;}
+.gp-empty-ico-blue{background:#EAF1FF;color:var(--blue-deep);}
+.gp-empty-ico-green{background:var(--green-bg);color:var(--green);}
+.gp-empty-ico-neutral{background:var(--line);color:var(--muted);}
 .gp-alldone h2{font-size:18px;font-weight:700;margin-bottom:6px;}
-.gp-alldone p{font-size:13.5px;color:var(--muted);}
+.gp-alldone p{font-size:13.5px;color:var(--muted);max-width:340px;margin:0 auto;line-height:1.55;}
+.gp-empty-action{margin-top:18px;}
+.gp-empty-action .gp-addbtn{display:inline-flex;}
 @media (max-width:768px){.gp-pagehead{align-items:center;}}
 /* ---- Shared drawer (rendered on this page) ---- */
 .gp-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap;padding:4px 10px;border-radius:999px;}

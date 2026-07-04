@@ -20,6 +20,9 @@ import {
   ArrowIcon,
   PlusIcon,
   CloseIcon,
+  CapIcon,
+  SearchIcon,
+  EmptyState,
   type AppWithRels,
 } from "@/components/appShared";
 
@@ -229,11 +232,31 @@ export default function ApplicationsClient({
       </div>
 
       {visible.length === 0 ? (
-        <div className="gp-tempty">
-          {apps.length === 0
-            ? "No applications yet. Add your first university to get started."
-            : "No applications match this filter."}
-        </div>
+        apps.length === 0 ? (
+          <EmptyState
+            tone="blue"
+            icon={<CapIcon />}
+            heading="No applications yet"
+            text="Add your first university to start tracking deadlines, tasks, and documents in one place."
+            action={
+              <button className="gp-addbtn" onClick={() => setAddOpen(true)}>
+                <PlusIcon /> <span>Add application</span>
+              </button>
+            }
+          />
+        ) : (
+          <EmptyState
+            tone="neutral"
+            icon={<SearchIcon />}
+            heading="No matches"
+            text="No applications match this filter. Try a different status."
+            action={
+              <button className="gp-btn-ghost" onClick={() => setFilter("all")}>
+                Clear filter
+              </button>
+            }
+          />
+        )
       ) : (
         <div className="gp-grid">
           {visible.map((app) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Application, Task, Document, ApplicationStatus, DocumentType } from "@/types";
 
 /* ---------------- Shared types ---------------- */
@@ -92,6 +92,36 @@ export const PlusIcon = () => (
 export const TrashIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
 );
+export const CapIcon = ({ s = 26 }: { s?: number }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9l10-5 10 5-10 5-10-5z" /><path d="M6 11.5V16c0 1.4 2.6 2.5 6 2.5s6-1.1 6-2.5v-4.5" /><path d="M22 9v6" /></svg>
+);
+export const SearchIcon = ({ s = 24 }: { s?: number }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+);
+
+/* ---------------- Shared empty state ---------------- */
+export function EmptyState({
+  icon,
+  tone = "neutral",
+  heading,
+  text,
+  action,
+}: {
+  icon: ReactNode;
+  tone?: "blue" | "green" | "neutral";
+  heading: string;
+  text: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="gp-alldone">
+      <div className={`gp-empty-ico gp-empty-ico-${tone}`}>{icon}</div>
+      <h2>{heading}</h2>
+      <p>{text}</p>
+      {action && <div className="gp-empty-action">{action}</div>}
+    </div>
+  );
+}
 
 /* ---------------- Shared Detail Drawer ---------------- */
 export function AppDrawer({

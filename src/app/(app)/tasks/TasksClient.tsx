@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import "./tasks.css";
 import type { ApplicationStatus } from "@/types";
 import {
@@ -8,6 +9,9 @@ import {
   flagFor,
   fmtDate,
   pctColor,
+  CapIcon,
+  PlusIcon,
+  EmptyState,
   type AppWithRels,
 } from "@/components/appShared";
 
@@ -139,29 +143,38 @@ export default function TasksClient({ applications: initial }: { applications: A
       </div>
 
       {groups.length === 0 ? (
-        <div className="gp-alldone">
-          <div className="gp-empty-ico" style={{ color: "var(--green)" }}>
-            <DoneIcon />
-          </div>
-          <h2>
-            {totalCount === 0
-              ? "No tasks yet"
-              : filter === "pending"
-              ? "All caught up"
-              : filter === "done"
-              ? "Nothing completed yet"
-              : "No tasks to show"}
-          </h2>
-          <p>
-            {totalCount === 0
-              ? "Add an application to generate your task checklist."
-              : filter === "pending"
-              ? "No pending tasks to show."
-              : filter === "done"
-              ? "Complete a task to see it here."
-              : "No tasks match this filter."}
-          </p>
-        </div>
+        totalCount === 0 ? (
+          <EmptyState
+            tone="blue"
+            icon={<CapIcon />}
+            heading="No tasks yet"
+            text="Add an application to generate your task checklist automatically."
+            action={
+              <Link href="/applications?add=1" className="gp-addbtn">
+                <PlusIcon /> <span>Add application</span>
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyState
+            tone="green"
+            icon={<DoneIcon />}
+            heading={
+              filter === "pending"
+                ? "All caught up"
+                : filter === "done"
+                ? "Nothing completed yet"
+                : "No tasks to show"
+            }
+            text={
+              filter === "pending"
+                ? "No pending tasks to show."
+                : filter === "done"
+                ? "Complete a task to see it here."
+                : "No tasks match this filter."
+            }
+          />
+        )
       ) : (
         <div className="gp-taskgroups">
           {groups.map(({ app, tasks }) => {

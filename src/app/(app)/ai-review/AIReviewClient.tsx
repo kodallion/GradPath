@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+import Link from "next/link";
 import "./ai-review.css";
 import type { Application, Document } from "@/types";
 import type { ReviewResult, ReviewAnnotation } from "@/lib/aiReview";
-import { flagFor } from "@/components/appShared";
+import { flagFor, EmptyState } from "@/components/appShared";
 import { extractText } from "./extractText";
 
 type DocLite = Pick<Document, "id" | "type" | "fileName">;
@@ -418,7 +419,17 @@ export default function AIReviewClient({
       </div>
 
       {applications.length === 0 ? (
-        <div className="gp-tempty">Add an application first, then run reviews on its documents.</div>
+        <EmptyState
+          tone="blue"
+          icon={<Spark s={26} />}
+          heading="No applications to review"
+          text="Add an application first, then run AI reviews on its SOP and CV."
+          action={
+            <Link href="/applications?add=1" className="gp-addbtn">
+              <Plus /> <span>Add application</span>
+            </Link>
+          }
+        />
       ) : (
         <div className="gp-ai-grid">
           {applications.map((a) => {
