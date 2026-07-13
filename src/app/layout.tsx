@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "GradPath — Manage Every Graduate Application in One Place",
   description:
     "Track, organize, and complete multiple university applications with clarity, structure, and AI guidance.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "GradPath",
+  },
 };
 
 export default function RootLayout({
