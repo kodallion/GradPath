@@ -274,5 +274,6 @@
 .gp-land .eyebrow{letter-spacing:0 !important}
 .gp-land .btn{letter-spacing:-1px}
 .gp-land{min-height:100vh;}
-@media(max-width:480px){.gp-land .hero{padding:104px 0 36px}.gp-land .hero h1{font-size:34px}.gp-land .hero h1 .type-line{min-height:2.12em}.gp-land .section{padding:60px 0}.gp-land .mock-main{padding:18px}.gp-land .spot-grid{padding:30px 22px}}
+@media(max-width:480px){.gp-land .hero{padding:104px 0 36px}.gp-land .hero h1{font-size:34px}.gp-land .hero h1 .type-line{min-height:1.2em}.gp-land .section{padding:60px 0}.gp-land .mock-main{padding:18px}.gp-land .spot-grid{padding:30px 22px}}
+@media(max-width:380px){.gp-land .hero h1 .type-line{min-height:2.12em}}
 @media (prefers-reduced-motion: reduce){.gp-land *,.gp-land *::before,.gp-land *::after{animation:none !important;transition:none !important}.gp-land .reveal{opacity:1;transform:none}}
