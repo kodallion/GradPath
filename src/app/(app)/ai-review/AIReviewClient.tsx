@@ -24,6 +24,8 @@ interface ReviewRecord {
 }
 
 const FREE_DAILY = 3;
+// Flip to true once ANTHROPIC_API_KEY is funded in prod (see CLAUDE.md pending #2).
+const AI_REVIEW_LIVE = false;
 
 function scoreColor(s: number) {
   if (s >= 8) return "#22A565";
@@ -93,6 +95,7 @@ export default function AIReviewClient({
   const [activeNote, setActiveNote] = useState<string | null>(null);
   const [noteFilter, setNoteFilter] = useState<"all" | "good" | "improve">("all");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const noteRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -115,6 +118,7 @@ export default function AIReviewClient({
   }, [applications, reviews]);
 
   function openRunner() {
+    if (!AI_REVIEW_LIVE) { setShowComingSoon(true); return; }
     setError(""); setText(""); setFileName(""); setShowPaste(false);
     setView("runner");
   }
@@ -476,12 +480,26 @@ export default function AIReviewClient({
       )}
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      {showComingSoon && <ComingSoonModal onClose={() => setShowComingSoon(false)} />}
     </div>
   );
 }
 
 function reconstructText(result: ReviewResult): string {
   return result.annotations.map((a) => a.span).filter(Boolean).join("\n\n");
+}
+
+function ComingSoonModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(14,19,32,.5)", display: "grid", placeItems: "center", zIndex: 300, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--paper)", borderRadius: 20, padding: 28, maxWidth: 380, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(16,22,40,.3)" }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: "#EAF1FF", color: "var(--blue-deep)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}><Spark s={22} /></div>
+        <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 8, color: "var(--ink)" }}>AI Review is coming soon</h2>
+        <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 20 }}>We&rsquo;re putting the finishing touches on AI-powered feedback for your SOP and CV. Check back shortly.</p>
+        <button onClick={onClose} style={{ display: "block", width: "100%", fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(180deg,var(--blue-hi),var(--blue))", padding: "12px 16px", borderRadius: 999 }}>Got it</button>
+      </div>
+    </div>
+  );
 }
 
 function UpgradeModal({ onClose }: { onClose: () => void }) {
