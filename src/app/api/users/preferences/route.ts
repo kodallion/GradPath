@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { captureServerEvent } from "@/lib/posthog-server";
 import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -35,9 +36,17 @@ export async function PATCH(req: Request) {
     }
     const merged: Record<string, boolean> = { ...existing, ...clean };
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { clerkId: userId },
       data: { preferences: merged as Prisma.InputJsonValue },
+      select: { clerkId: true },
+    });
+    await captureServerEvent({
+      distinctId: updatedUser.clerkId,
+      event: "preferences_updated",
+      properties: {
+        updated_keys: Object.keys(clean),
+      },
     });
     return NextResponse.json({ preferences: merged });
   } catch {

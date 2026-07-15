@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import "./applications.css";
 import type { ApplicationStatus, Task } from "@/types";
 import { FREE_PLAN_LIMITS } from "@/lib/utils";
@@ -414,6 +415,10 @@ function AddModal({
         });
         created.status = form.status;
       }
+      posthog.capture("application_add_submitted", {
+        selected_status: form.status,
+        country: form.country,
+      });
       onCreated(created);
     } catch {
       setError("Something went wrong. Please try again.");

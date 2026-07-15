@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
+import posthog from "posthog-js";
 import "./settings.css";
 
 interface Props {
@@ -74,6 +75,9 @@ export default function SettingsClient(props: Props) {
         body: JSON.stringify({ name: name.trim() }),
       });
       if (res.ok) {
+        posthog.capture("profile_save_submitted", {
+          has_name: Boolean(name.trim()),
+        });
         setNameSaved(true);
         flash("Profile saved.");
         router.refresh();
@@ -93,6 +97,10 @@ export default function SettingsClient(props: Props) {
     const next = { ...prefs, [key]: !prefs[key] };
     setPrefs(next);
     try {
+      posthog.capture("preferences_toggle_clicked", {
+        preference_key: key,
+        enabled: next[key],
+      });
       await fetch("/api/users/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -107,6 +115,9 @@ export default function SettingsClient(props: Props) {
   async function exportData() {
     setExporting(true);
     try {
+      posthog.capture("data_export_requested_client", {
+        source: "settings_page",
+      });
       const res = await fetch("/api/users/export");
       if (!res.ok) throw new Error();
       const blob = await res.blob();
@@ -130,6 +141,9 @@ export default function SettingsClient(props: Props) {
     if (deleteText !== "DELETE") return;
     setDeleting(true);
     try {
+      posthog.capture("account_delete_confirmed", {
+        source: "settings_page",
+      });
       const res = await fetch("/api/users/account", { method: "DELETE" });
       if (res.ok) {
         await signOut(() => router.push("/"));

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import posthog from "posthog-js";
 import {
   GraduationCap,
   ArrowRight,
@@ -161,6 +162,17 @@ export default function OnboardingClient() {
         }),
       });
       if (res.ok) {
+        posthog.identify(user?.id ?? "anonymous", {
+          email: user?.primaryEmailAddress?.emailAddress,
+          name: formData.name || user?.firstName || undefined,
+        });
+        posthog.capture("onboarding_submitted", {
+          step_count: TOTAL_STEPS,
+          selected_degree_count: formData.degreeType.length,
+          selected_region_count: formData.regions.length + formData.customRegions.length,
+          has_first_application: !skipApp,
+          process_stage: formData.processStage || "unknown",
+        });
         setShowSuccess(true);
       }
     } catch (e) {

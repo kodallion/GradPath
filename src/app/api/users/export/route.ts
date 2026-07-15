@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,15 @@ export async function GET() {
       payments: user.payments,
       notifications: user.notifications,
     };
+
+    await captureServerEvent({
+      distinctId: user.clerkId,
+      event: "data_export_requested",
+      properties: {
+        application_count: user.applications.length,
+        notification_count: user.notifications.length,
+      },
+    });
 
     const json = JSON.stringify(payload, null, 2);
     return new NextResponse(json, {

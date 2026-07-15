@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import posthog from "posthog-js";
 import "./documents.css";
 import type { Application, Document, DocumentType } from "@/types";
 import { flagFor, EmptyState } from "@/components/appShared";
@@ -121,6 +122,10 @@ export default function DocumentsClient({ applications: initial }: { application
           return { ...a, documents: [...docs, data as Document] };
         })
       );
+      posthog.capture("document_upload_submitted", {
+        document_type: target.type,
+        replaced_existing: target.type !== "OTHER",
+      });
       setToast("Document uploaded.");
     } catch {
       setToast("Upload failed. Please try again.");
@@ -134,6 +139,9 @@ export default function DocumentsClient({ applications: initial }: { application
   }
 
   function view(docId: string) {
+    posthog.capture("document_viewed", {
+      source: "documents_page",
+    });
     window.open(`/api/documents/${docId}/download?inline=1`, "_blank");
   }
 

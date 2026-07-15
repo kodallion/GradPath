@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { captureServerEvent } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,8 +19,17 @@ export async function POST(req: Request) {
       if (payment) {
         const trialEnd = new Date();
         trialEnd.setDate(trialEnd.getDate() + 7);
-        await prisma.user.update({ where: { id: payment.userId }, data: { plan: "PRO", subscriptionStatus: "active", trialEndsAt: trialEnd, planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } });
+        const upgradedUser = await prisma.user.update({ where: { id: payment.userId }, data: { plan: "PRO", subscriptionStatus: "active", trialEndsAt: trialEnd, planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } });
         await prisma.notification.create({ data: { userId: payment.userId, type: "SUBSCRIPTION_EVENT", title: "Welcome to GradPath Pro! 🎉", message: "Your Pro plan is now active." } });
+        await captureServerEvent({
+          distinctId: upgradedUser.clerkId,
+          event: "payment_completed",
+          properties: {
+            amount: event.data.amount,
+            currency: event.data.currency,
+            provider: "flutterwave",
+          },
+        });
       }
     }
     return NextResponse.json({ status: "ok" });

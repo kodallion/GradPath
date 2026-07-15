@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { captureServerEvent } from "@/lib/posthog-server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import type { DocumentType } from "@prisma/client";
 
@@ -97,6 +98,17 @@ export async function POST(req: Request) {
         },
       });
     }
+
+    await captureServerEvent({
+      distinctId: user.clerkId,
+      event: "document_uploaded",
+      properties: {
+        document_type: type,
+        replaced_existing: Boolean(existing),
+        file_size_bucket:
+          file.size > 5 * 1024 * 1024 ? "gt_5mb" : file.size > 1024 * 1024 ? "1mb_to_5mb" : "lte_1mb",
+      },
+    });
 
     return NextResponse.json(doc, { status: 201 });
   } catch (error) {

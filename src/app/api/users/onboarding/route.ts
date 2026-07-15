@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { captureServerEvent, identifyServerUser } from "@/lib/posthog-server";
 import { AUTO_GENERATED_TASKS } from "@/lib/utils";
 import { DegreeType, ProcessStage } from "@prisma/client";
 
@@ -61,6 +62,29 @@ export async function POST(req: Request) {
         clerkId: userId,
         email: clerkUser?.emailAddresses[0]?.emailAddress || "",
         ...onboardingData,
+      },
+    });
+
+    await identifyServerUser({
+      distinctId: user.clerkId,
+      properties: {
+        email: user.email,
+        name: user.name || undefined,
+        onboarding_completed: true,
+      },
+    });
+
+    await captureServerEvent({
+      distinctId: user.clerkId,
+      event: "onboarding_completed",
+      properties: {
+        has_first_application: Boolean(
+          firstApplication?.universityName &&
+            firstApplication?.program &&
+            firstApplication?.deadline
+        ),
+        process_stage: onboardingData.processStage ?? "unknown",
+        region_count: onboardingData.regions.length,
       },
     });
 
