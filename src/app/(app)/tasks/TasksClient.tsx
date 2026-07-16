@@ -11,6 +11,7 @@ import {
   pctColor,
   CapIcon,
   PlusIcon,
+  TrashIcon,
   EmptyState,
   type AppWithRels,
 } from "@/components/appShared";
@@ -28,6 +29,14 @@ export default function TasksClient({ applications: initial }: { applications: A
   const [apps, setApps] = useState<AppWithRels[]>(initial);
   const [filter, setFilter] = useState<FilterMode>("pending");
   const [drawerId, setDrawerId] = useState<string | null>(null);
+  // Tasks toggled in the current filter view stay put (like the drawer) instead
+  // of vanishing the instant they no longer match the active filter. Cleared
+  // whenever the filter tab itself changes, so switching tabs re-queries fresh.
+  const [stickyIds, setStickyIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setStickyIds(new Set());
+  }, [filter]);
 
   const allTasks = apps.flatMap((a) => a.tasks);
   const pendingCount = allTasks.filter((t) => !t.completed).length;
@@ -56,6 +65,7 @@ export default function TasksClient({ applications: initial }: { applications: A
     setApps((prev) => prev.map((a) => (a.id === id ? { ...a, ...partial } : a)));
 
   async function toggleTask(appId: string, taskId: string, completed: boolean) {
+    setStickyIds((prev) => new Set(prev).add(taskId));
     patchApp(appId, {
       tasks: (apps.find((a) => a.id === appId)?.tasks || []).map((t) =>
         t.id === taskId ? { ...t, completed } : t
@@ -99,13 +109,14 @@ export default function TasksClient({ applications: initial }: { applications: A
   const groups = useMemo(() => {
     return apps
       .map((a) => {
-        const tasks = a.tasks.filter((t) =>
-          filter === "pending" ? !t.completed : filter === "done" ? t.completed : true
-        );
+        const tasks = a.tasks.filter((t) => {
+          if (stickyIds.has(t.id)) return true;
+          return filter === "pending" ? !t.completed : filter === "done" ? t.completed : true;
+        });
         return { app: a, tasks };
       })
       .filter((g) => g.tasks.length > 0);
-  }, [apps, filter]);
+  }, [apps, filter, stickyIds]);
 
   return (
     <div className="gp-tasks-page">
@@ -182,42 +193,16 @@ export default function TasksClient({ applications: initial }: { applications: A
             const done = app.tasks.filter((t) => t.completed).length;
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
             return (
-              <section className="gp-panel gp-taskgroup" key={app.id}>
-                <div className="gp-taskgroup-head" onClick={() => setDrawerId(app.id)}>
-                  <span className="gp-tflag">{flagFor(app.country)}</span>
-                  <div className="gp-taskgroup-meta">
-                    <div className="gp-taskgroup-uni">{app.universityName}</div>
-                    <div className="gp-taskgroup-sub">{app.program}</div>
-                  </div>
-                  <div className="gp-taskgroup-right">
-                    <span className="gp-taskgroup-pct" style={{ color: pctColor(pct) }}>
-                      {pct}%
-                    </span>
-                    <span className="gp-taskgroup-deadline">{fmtDate(app.deadline)}</span>
-                  </div>
-                </div>
-                <ul className="gp-tasklist">
-                  {tasks.map((t) => (
-                    <li
-                      key={t.id}
-                      className={`gp-task${t.completed ? " done" : ""}`}
-                      onClick={() => toggleTask(app.id, t.id, !t.completed)}
-                    >
-                      <span
-                        className="gp-checkbox"
-                        style={
-                          t.completed
-                            ? { background: "var(--blue)", borderColor: "var(--blue)" }
-                            : undefined
-                        }
-                      >
-                        {t.completed && <CheckIcon />}
-                      </span>
-                      <span className="gp-task-title">{t.title}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+              <TaskGroupCard
+                key={app.id}
+                app={app}
+                tasks={tasks}
+                pct={pct}
+                onOpenDrawer={() => setDrawerId(app.id)}
+                onToggleTask={(taskId, completed) => toggleTask(app.id, taskId, completed)}
+                onAddTask={(title) => addTask(app.id, title)}
+                onDeleteTask={(taskId) => deleteTask(app.id, taskId)}
+              />
             );
           })}
         </div>
@@ -234,6 +219,116 @@ export default function TasksClient({ applications: initial }: { applications: A
         />
       )}
     </div>
+  );
+}
+
+function TaskGroupCard({
+  app,
+  tasks,
+  pct,
+  onOpenDrawer,
+  onToggleTask,
+  onAddTask,
+  onDeleteTask,
+}: {
+  app: AppWithRels;
+  tasks: AppWithRels["tasks"];
+  pct: number;
+  onOpenDrawer: () => void;
+  onToggleTask: (taskId: string, completed: boolean) => void;
+  onAddTask: (title: string) => void;
+  onDeleteTask: (taskId: string) => void;
+}) {
+  const [newTask, setNewTask] = useState("");
+
+  function submitTask() {
+    const t = newTask.trim();
+    if (!t) return;
+    onAddTask(t);
+    setNewTask("");
+  }
+
+  return (
+    <section className="gp-panel gp-taskgroup">
+      <div className="gp-taskgroup-head" onClick={onOpenDrawer}>
+        <span className="gp-tflag">{flagFor(app.country)}</span>
+        <div className="gp-taskgroup-meta">
+          <div className="gp-taskgroup-uni">{app.universityName}</div>
+          <div className="gp-taskgroup-sub">{app.program}</div>
+        </div>
+        <div className="gp-taskgroup-right">
+          <span className="gp-taskgroup-pct" style={{ color: pctColor(pct) }}>
+            {pct}%
+          </span>
+          <span className="gp-taskgroup-deadline">{fmtDate(app.deadline)}</span>
+        </div>
+      </div>
+      <ul className="gp-tasklist">
+        {tasks.map((t) => (
+          <li
+            key={t.id}
+            className={`gp-task${t.completed ? " done" : ""}`}
+            style={{ alignItems: "center" }}
+          >
+            <span
+              className="gp-checkbox"
+              style={
+                t.completed
+                  ? { background: "var(--blue)", borderColor: "var(--blue)" }
+                  : undefined
+              }
+              onClick={() => onToggleTask(t.id, !t.completed)}
+            >
+              {t.completed && <CheckIcon />}
+            </span>
+            <span
+              className="gp-task-title"
+              onClick={() => onToggleTask(t.id, !t.completed)}
+              style={{ flex: 1 }}
+            >
+              {t.title}
+            </span>
+            {!t.isAutoGenerated && (
+              <button
+                onClick={() => onDeleteTask(t.id)}
+                style={{ color: "var(--muted-2)", display: "flex", padding: 4 }}
+                title="Delete task"
+              >
+                <TrashIcon />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
+        <input
+          className="gp-task-add-input"
+          placeholder="Add a task…"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submitTask()}
+          style={{
+            flex: 1,
+            fontFamily: "inherit",
+            fontSize: 13.5,
+            color: "var(--ink)",
+            background: "var(--paper)",
+            border: "1px solid var(--line-2)",
+            borderRadius: 10,
+            padding: "8px 12px",
+            outline: "none",
+          }}
+        />
+        <button
+          className="gp-btn-primary"
+          onClick={submitTask}
+          disabled={!newTask.trim()}
+          style={{ padding: "8px 14px" }}
+        >
+          Add
+        </button>
+      </div>
+    </section>
   );
 }
 
